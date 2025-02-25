@@ -46,6 +46,7 @@ const DEBUG = false;
 
 // global vars of followers
 var followersLst = [];
+var listNewFollowers = [];
 var fullEmailFollowerData = [];
 var followersMessageSent = [];
 var followersLstIsSendingLimit = 10000; // default limit
@@ -2660,7 +2661,11 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     isPrivateAccount = true;
     abortController.abort();
     await pauseIfBanned();
+  } else if (request.action === "readyListNewFollowersFront") {
+    if (DEBUG) console.error(`[HOWER] - Lista de nuevos seguidores obtenida!!'`);
+    listNewFollowers = request.usernamesNewFollowers;
   }
+    
 });
 
 function focusWindow(windowId) {
@@ -5867,6 +5872,69 @@ async function sendInstagramDMMessages() {
       break;
     }
 
+    // HERE ADD THE LOGIC OF THE NEW FOLLOWERS
+    
+    
+    if (shouldSendMessageToNewFollowers && indexMessagesSent === 0) {
+       // validate for the inspecting followers 
+       document.getElementById('loadingFollowersOverlay').style.display = 'block';
+       document.getElementById('loadingFollowersPopup').style.display = 'flex';
+      try {      
+        // open the chrome window inside the user profile
+        await chrome.tabs.update(instaTab.id, {
+          url: `https://www.instagram.com/`,
+        });
+
+        await new Promise(resolve => {
+          chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+            if (tabId === instaTab.id && info.status === 'complete') {
+              chrome.tabs.onUpdated.removeListener(listener);
+              resolve();
+            }
+          });
+        });
+
+        // this will get me the list of new followers
+       const responseListFollowers = chrome.tabs.sendMessage(instaTab.id, {
+         action: "listNewFollowers",
+         instaTabId: instaTab.id,
+         windowId: windowMessagesId,
+       });
+ 
+       } catch (error) {
+         if (DEBUG) console.error(`[HOWER:ERROR] - Error al obtener lista de nuevos seguidores -> ${error.toString()} - [WINDOW:${windowMessagesId}]`);
+       }
+       
+       let timeLimitForNewFollowers = 60;
+       let counter = 0;
+       while (counter < timeLimitForNewFollowers) {
+         // await 1 second per each loop and check
+         await delay(1000);
+         counter++;
+         if (listNewFollowers.length > 0) {
+           break;
+         }
+       }
+   
+       // deactivate popup
+       document.getElementById('loadingFollowersOverlay').style.display = 'none';
+       document.getElementById('loadingFollowersPopup').style.display = 'none';
+
+       // modify each listNewFollowers to be a string 
+       // separated with comas and this format
+       // ",usernamewithoutlink,,,true"
+       // let listNewFollowersString = listNewFollowers.map(follower => `,${follower.split("www.instagram.com/")[1].split("/")[0]},,,true`).join('');
+       for (let i = 0; i < listNewFollowers.length; i++) {
+        listNewFollowers[i] = `,${listNewFollowers[i].split("www.instagram.com/")[1].split("/")[0]},,,true`;
+       }
+      
+       // add the listNewFollowwers to the messagesToSendNewFollowers
+       linesToUse = [...listNewFollowers, ...linesToUse];
+     }
+ 
+     
+
+    // get the user
     let user = linesToUse[indexMessagesSent];
 
     let username = "";
@@ -6069,12 +6137,6 @@ async function sendInstagramDMMessages() {
     )} minutos`;
     console.log(responseMessage);
 
-    // activate popup
-    // validate for the inspecting followers 
-    
-
-    // deactivate popup
-    
 
     try {
       if (DEBUG) console.error(`[HOWER] - Enviando MENSAJES!! ${getCurrentDateTime()} - [WINDOW:${windowMessagesId}]`);

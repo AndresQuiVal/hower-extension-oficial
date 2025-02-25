@@ -2401,6 +2401,16 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     }, 5000);
   } else if (request.action === "couldSendMessage") {
     findBlockedMessageDivs();
+  } else if (request.action === "listNewFollowers") {
+    // some time delay
+    await new Promise(resolve => setTimeout(resolve, 10000));
+
+    let usernamesNewFollowers = await getUsernamesNewFollowers();
+    chrome.runtime.sendMessage({
+      action: "readyListNewFollowers",
+      usernamesNewFollowers: usernamesNewFollowers
+    });
+
   }
 
   // sendResponse(response);

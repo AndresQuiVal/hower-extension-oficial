@@ -1317,6 +1317,33 @@
         </div>
     </div>
 
+    <div class="popup-overlay" id="loadingFollowersOverlay" style="display: none;"></div>
+<div id="loadingFollowersPopup" class="popup" style="display: none; background-color: #1e1e2f; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); align-items: center; justify-content: center;">
+    <div class="popup-content" style="color: white; text-align: center; padding: 20px;">
+        <h2 style="color: white;">Obteniendo nuevos seguidores</h2>
+        <p>Por favor espera mientras procesamos la información...</p>
+        
+        <div class="loader" style="
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;">
+        </div>
+        
+        <p id="loadingMessage">Esto puede tomar unos momentos...</p>
+    </div>
+</div>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
 
     <div class="popup-overlay" id="popupOverlayPostsSearcher" style="display: none;"></div>
     <div id="welcomePopupPostsSearcher" class="popup"
@@ -1562,7 +1589,7 @@
                         <div style="display: flex; align-items: center; margin-right: 20px;">
                             <label style="margin-right: 30px;">👉 Saludar a nuevos seguidores</label>
                             <label class="switch" style="margin-right: 10px;">
-                                <input type="checkbox" id="sendMessageToNewFollowersCheckbox" disabled>
+                                <input type="checkbox" id="sendMessageToNewFollowersCheckbox">
                                 <span class="slider round"></span>
                             </label>
                         </div>

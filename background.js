@@ -219,6 +219,11 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
       message: message.message,
       priority: 1
     });
+  } else if (message.action === "readyListNewFollowers") {
+    console.error(`[BACKGROUND] - Recibiendo lista de nuevos seguidores`);
+    console.error(message.usernamesNewFollowers);
+
+    chrome.runtime.sendMessage({ action: "readyListNewFollowersFront", usernamesNewFollowers: message.usernamesNewFollowers });
   }
 
   // Return true to indicate that you will send a response asynchronously
