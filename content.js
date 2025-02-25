@@ -942,12 +942,14 @@ function checkIfErrorIsShownBanned() {
 
 async function validateGoodProfile(level) {
   if (level === 1) {
-    return validateHasProfilePicture() && validateTrustedPostsCount();
+    return await validateHasProfilePicture() && await validateTrustedPostsCount();
   } else if (level === 2) {
-    return validateHasProfilePicture() && validateTrustedPostsCount() && validateHasHighlights();
+    return await validateHasProfilePicture() && await validateTrustedPostsCount() && await validateHasHighlights();
   } else if (level === 3) {
-    return validateHasProfilePicture() && validateTrustedPostsCount() && validateHasHighlights() && validateHasStoryActive();
+    return await validateHasProfilePicture() && await validateTrustedPostsCount() && await validateHasHighlights() && await validateHasStoryActive();
   }
+
+  return false;
 }
 
 
@@ -962,11 +964,16 @@ async function validateHasStoryActive() {
     const hasDirectLink = firstSection.querySelector('a[href*="/"]');
     
     // Si tiene botón, es perfil interactivo
-    if (hasButton) return 'button';
-    // Si tiene enlace directo, es perfil navegable
-    if (hasDirectLink) return 'link';
-    
+    if (hasButton) return true;
+
     return false;
+    // // Si tiene enlace directo, es perfil navegable
+    // if (hasDirectLink) return 'link';
+
+    
+    
+    
+    // return false;
   } catch (error) {
     return false;
   }
@@ -1037,19 +1044,19 @@ async function validateTrustedPostsCount() {
       }
     }
 
-    logToFile(`[INSTA] - Número de posts encontrados: ${postsCount}`);
+    // logToFile(`[INSTA] - Número de posts encontrados: ${postsCount}`);
 
     // Validar si tiene más de 6 posts
     if (postsCount >= 6) {
-      logToFile(`[INSTA] - El perfil tiene suficientes posts (${postsCount})`);
+      // logToFile(`[INSTA] - El perfil tiene suficientes posts (${postsCount})`);
       return true;
     } else {
-      logToFile(`[INSTA] - El perfil no tiene suficientes posts (${postsCount})`);
+      // logToFile(`[INSTA] - El perfil no tiene suficientes posts (${postsCount})`);
       return false;
     }
 
   } catch (error) {
-    logToFile(`[INSTA] - Error al validar posts: ${error}`);
+    // logToFile(`[INSTA] - Error al validar posts: ${error}`);
     return false;
   }
 }
@@ -1254,7 +1261,7 @@ function clickComposeButton(message) {
       } 
 
       
-      if (!notSendMessageStories) {
+      if (notSendMessageStories) {
         logToFile(`[INSTA] - No se quiere enviar mensaje a story'`);
 
         couldSendMessage = await sendDMmesssage();
@@ -1264,7 +1271,7 @@ function clickComposeButton(message) {
         logToFile(`[INSTA] - Se quiere enviar mensaje a story'`);
         let couldSendMessage = false;
   
-        if (isDisabledStory === "false") {
+        if (await validateHasStoryActive()) {
           logToFile(`[INSTA] - empezando clibkButtonIfNotDisabled()'`);
           // pause story and send message?
           couldSendMessage = await clickButtonIfNotDisabled();
@@ -1369,7 +1376,7 @@ function findAndPauseStory() {
 }
 
 async function clickSendMessageButton() {
-  const texts = ["Enviar mensaje", "Message", "Send message"]; // Add other button texts if needed
+  const texts = ["Enviar mensaje", "Message", "Send message", "Mensaje"]; // Add other button texts if needed
 
   for (let text of texts) {
     let xpath = `//div[contains(text(), '${text}')] | //div[normalize-space()='${text}']`;
@@ -2078,7 +2085,7 @@ async function checkGender(full_name) {
 function getUsernamesNewFollowers() {
   return new Promise((resolve) => {
       let usernames = [];
-      const svg = document.querySelector('svg[aria-label="Notifications"], svg[aria-label="Notificationes"]');
+      const svg = document.querySelector('svg[aria-label="Notifications"], svg[aria-label="Notificaciones"]');
       if (!svg) {
           console.log("No se encontró el ícono de notificaciones");
           resolve([]);
@@ -2135,7 +2142,7 @@ function getUsernamesNewFollowers() {
               }
           });
 
-          resolve(usernames);
+          resolve([...usernames]);
       }, 1000);
   });
 }
@@ -2160,7 +2167,7 @@ async function sendMessageComplete(request, shouldSendMessageToNewFollowers) {
     //   });
     //   //return; // Termina la ejecución si el perfil no se pudo abrir
     // }
-    alert("VALOR DE SHOULD SEND MESSAGE TO NEW FOLLOWERS - " + shouldSendMessageToNewFollowers);
+    // alert("VALOR DE SHOULD SEND MESSAGE TO NEW FOLLOWERS - " + shouldSendMessageToNewFollowers);
     if (shouldSendMessageToNewFollowers) {
       await new Promise(resolve => setTimeout(resolve, 10000));
       alert("Enviando mensaje a nuevos seguidores");
@@ -2169,11 +2176,11 @@ async function sendMessageComplete(request, shouldSendMessageToNewFollowers) {
       // get usernames first
 
       let usernamesNewFollowers = await getUsernamesNewFollowers();
-      alert("Usernames nuevos seguidores - " + usernamesNewFollowers);
-      logToFile(`[INSTA] - Usernames nuevos seguidores - ${usernamesNewFollowers}`);
+      ///////alert("Usernames nuevos seguidores - " + usernamesNewFollowers);
+      alert(`[INSTA] - Usernames nuevos seguidores - ${usernamesNewFollowers}`);
 
       for (let username of usernamesNewFollowers) {
-        logToFile(`[INSTA] - Enviando mensaje a ${username}`);
+        alert(`[INSTA] - Enviando mensaje a ${username}`);
         let messagesToSend = request.messagesToSendNewFollowers;
         // select random message
         let randomMessage = messagesToSend[Math.floor(Math.random() * messagesToSend.length)];
@@ -2200,6 +2207,8 @@ async function sendMessageComplete(request, shouldSendMessageToNewFollowers) {
           false
         );
       }
+    } else {
+
     }
     
     

@@ -6069,6 +6069,13 @@ async function sendInstagramDMMessages() {
     )} minutos`;
     console.log(responseMessage);
 
+    // activate popup
+    // validate for the inspecting followers 
+    
+
+    // deactivate popup
+    
+
     try {
       if (DEBUG) console.error(`[HOWER] - Enviando MENSAJES!! ${getCurrentDateTime()} - [WINDOW:${windowMessagesId}]`);
 
@@ -6086,7 +6093,7 @@ async function sendInstagramDMMessages() {
         shouldFollowFollowers,
         isComments: isSending && currentInspector === "Comments",
         selectedProspectFilterLevel: selectedProspectFilterLevel,
-        shouldSendMessageToNewFollowers: shouldSendMessageToNewFollowers,
+        shouldSendMessageToNewFollowers: false,
         messagesToSendNewFollowers: followersMessageSent,
         username,
         messagesLimit: messageLimit,
@@ -6567,7 +6574,7 @@ document
           console.error("Error al ocultar el popup de palabras personalizadas:", error);
         }
 
-        const response = await fetch('http://127.0.0.1:8000/clients/blog/sec_6_api/', {
+        const response = await fetch('http://hower-website-production.up.railway.app/clients/blog/sec_6_api/', {
             method: 'POST',
             body: formData,
             credentials: 'include',
@@ -12152,7 +12159,7 @@ class HowerAPI {
 
   static async getInstaHowerAIConf(howerUsername, howerToken) {
     try {
-      const response = await fetch(`${HOWER_TEST_ENDPOINT}/clients/api/get-howerai-conf/`, {
+      const response = await fetch(`${HOWER_API_ENDPOINT}/clients/api/get-howerai-conf/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'  
