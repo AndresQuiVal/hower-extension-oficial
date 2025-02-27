@@ -7,6 +7,7 @@ var stopMessages = false;
 var messagesLimit = 50;
 var notSendMessageStories = false;
 var sendMessagesToPreviousConversations = false;
+var isNewFollower = false;
 
 var RANDOM_MESSAGES_FOR_STORIES = [
   "Hola! [NOMBRE], cómo estás?",
@@ -32,6 +33,8 @@ var RANDOM_MESSAGES_FOR_STORIES = [
   "Hey [NOMBRE]! ¿Todo marcha bien?",
   "¡Hola [NOMBRE]! Revisa tu bandeja de mensajes"
 ];
+
+var followerMessages = [];
 
 function logToFile(message, type = 'log') {
   const timestamp = new Date().toISOString();
@@ -445,6 +448,12 @@ async function focusTextbox() {
   }
 }
 
+function getMessageToSendUser() {
+  // get the message to send
+  return (isNewFollower ? followerMessages[Math.floor(Math.random() * followerMessages.length)] : message_to_send);
+}
+
+
 function checkIfTextboxIsFocused() {
   var textboxSelector = 'div[role="textbox"][contenteditable="true"]';
   var textboxElement = document.querySelector(textboxSelector);
@@ -471,7 +480,7 @@ function checkIfTextboxIsFocused() {
     
   } else {
     
-    if (message_to_send.length === 0) {
+    if (getMessageToSendUser().length === 0) {
       
       return false;
     }
@@ -480,7 +489,7 @@ function checkIfTextboxIsFocused() {
       {
         action: "buttonMessageClicked",
         instaTabId: instaTabId,
-        messageToSend: message_to_send,
+        messageToSend: getMessageToSendUser(),
       },
       function (response) {
         
@@ -569,7 +578,7 @@ function checkIfTextboxIsFocusedComments() {
     
   } else {
     
-    if (message_to_send.length === 0) {
+    if (getMessageToSendUser().length === 0) {
       
       return false;
     }
@@ -1100,6 +1109,7 @@ async function sendDMmesssage() {
 
           // checamos si existe ya una conversación...
           let existsConversation = isConversationRepeated();
+          
           if (existsConversation && !sendMessagesToPreviousConversations) {
             // skip user
             chrome.runtime.sendMessage({
@@ -1138,7 +1148,7 @@ async function sendDMmesssage() {
               {
                 action: "buttonMessageClicked",
                 instaTabId: instaTabId,
-                messageToSend: message_to_send,
+                messageToSend: getMessageToSendUser(),
               },
               function (response) {
                 
@@ -1220,8 +1230,9 @@ function delay(ms) {
 }
 
 
-function clickComposeButton(message) {
+function clickComposeButton(message, followerMessages) {
   message_to_send = message;
+  followerMessages = followerMessages;
   
   setTimeout(function () {
     // first we follow the person!
@@ -1594,17 +1605,17 @@ async function pressedEnter(tabId) {
 var usernameInsta = "";
 var isComments = false;
 
-function sendMessage(username, message) {
+function sendMessage(username, message, followerMessages) {
   // Logic to navigate to the user's chat and send a message
   // This is complex because you'll need to interact with Instagram's UI elements
   // and they don't have consistent selectors you can easily target.
   
   
-  usernameInsta = username;
+  usernameInsta = username.split("-FOLLOWER")[0];
   try {
     logToFile(`[INSTA] - Empezando clickCompose()'`);
     // Open new message dialog
-    return clickComposeButton(message);
+    return clickComposeButton(message, followerMessages);
 
   } catch (error) {
     
@@ -2138,7 +2149,7 @@ function getUsernamesNewFollowers() {
           userLinks.forEach(link => {
               const username = link.getAttribute('href').replace('/', '');
               if (username) {
-                  usernames.push("https://www.instagram.com/" + username);
+                  usernames.push(`,${username.split("/")[0]}-FOLLOWER,,,true`);
               }
           });
 
@@ -2153,7 +2164,13 @@ function getUsernamesNewFollowers() {
 //     console.log(usernames);
 // }
 
+
 async function sendMessageComplete(request, shouldSendMessageToNewFollowers) {
+
+  if (request.username.includes("-FOLLOWER")) {
+    isNewFollower = true;
+    followerMessages = request.followerMessages;
+  }
 // await openUserProfile(
     //   request.username
     // )
@@ -2217,9 +2234,13 @@ async function sendMessageComplete(request, shouldSendMessageToNewFollowers) {
     shouldFollowFollowers = request.shouldFollowFollowers;
     try {
       sendMessagesToPreviousConversations = request.sendMessagesToPreviousConversations;
+      if (request.username.includes("-FOLLOWER")) {
+        sendMessagesToPreviousConversations = false; // force user to this!
+      }
     } catch (error) {
       logToFile(`[INSTA] Error al obtener sendMessagesToPreviousConversations - ${error}`);
     }
+
     // check if the user already follows the user
     let userAlreadyFollows = await checkIfUserAlreadyFollows();
     if (userAlreadyFollows) {
@@ -2266,10 +2287,12 @@ async function sendMessageComplete(request, shouldSendMessageToNewFollowers) {
     }
 
     let full_name = request.full_name;
-    if (request.isComments) {
+    if (request.isComments || isNewFollower) {
       logToFile(`[INSTA] Obteniendo nombre - ${request.username}`);
       // get title
+      // replace [NOMBRE] with the full name of the user
       full_name = await getFullName();
+      followerMessages = followerMessages.map(message => message.replace("[NOMBRE]", full_name));
       logToFile(`[INSTA] Obtenido nombre - ${request.username}`);
     }
 
@@ -2346,6 +2369,23 @@ async function sendMessageComplete(request, shouldSendMessageToNewFollowers) {
 }
 
 
+async function getListWithUsernamesAndNames(usernames) {
+  
+  // navigate to the username on instagram
+  // makes usernames unique
+  usernames = [...new Set(usernames)];
+
+  let listWithUsernamesAndNames = [];
+  for (let username of usernames) {
+    let usernameWithoutLink = username.split("www.instagram.com/")[1].split("/")[0];
+    await openUserProfile(usernameWithoutLink);
+    // get the name of the user
+    let name = await getFullName();
+    listWithUsernamesAndNames.push(`${name},${usernameWithoutLink},,,true`);
+  }
+  return listWithUsernamesAndNames;
+}
+
 
 
 chrome.runtime.onMessage.addListener(async function (request, sender, sendResponse) {
@@ -2353,10 +2393,12 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
   let response = { status: "Done", message: "" };
 
   if (request.action === "sendMessage") {
+    
     await sendMessageComplete(request, request.shouldSendMessageToNewFollowers);
     response.message = sendMessage(
       request.username,
-      request.messageToSend
+      request.messageToSend,
+      request.followerMessages
     )
 
     sendResponse(response);
@@ -2406,6 +2448,10 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     await new Promise(resolve => setTimeout(resolve, 10000));
 
     let usernamesNewFollowers = await getUsernamesNewFollowers();
+
+    // get the names of the usernames
+    // let listWithUsernamesAndNames = await getListWithUsernamesAndNames(usernamesNewFollowers);
+    console.error("USERS NEW FOLLOWERS - " + JSON.stringify(usernamesNewFollowers));
     chrome.runtime.sendMessage({
       action: "readyListNewFollowers",
       usernamesNewFollowers: usernamesNewFollowers

@@ -1338,11 +1338,21 @@ function toggleMessageButton() {
 
 document.getElementById('sendMessageToNewFollowersCheckbox').addEventListener('click', function(e) {
   console.log('Checkbox clicked');
+  if (document.getElementById('sendMessageToNewFollowersCheckbox').checked) {
+    localStorage.setItem('shouldSendMessageToNewFollowers', 'true');
+  } else {
+    localStorage.setItem('shouldSendMessageToNewFollowers', 'false');
+  }
   toggleMessageButton();
 });
 
 document.getElementById('sendMessageToNewFollowersCheckbox').addEventListener('change', function(e) {
-  console.log('Checkbox changed');
+  console.log('Checkbox clicked');
+  if (document.getElementById('sendMessageToNewFollowersCheckbox').checked) {
+    localStorage.setItem('shouldSendMessageToNewFollowers', 'true');
+  } else {
+    localStorage.setItem('shouldSendMessageToNewFollowers', 'false');
+  }
   toggleMessageButton();
 });
 
@@ -1372,38 +1382,149 @@ document.addEventListener('DOMContentLoaded', function() {
     renderMessages();
   });
 
-// Inicialización
-console.log('Initial checkbox state:', checkbox.checked);
-toggleMessageButton();
+  // Inicialización
+  console.log('Initial checkbox state:', checkbox.checked);
+  toggleMessageButton();
 
-  // Renderizar mensajes en el modal
-  function renderMessages() {
-      messagesList.innerHTML = '';
-      followerMessages.forEach((message, index) => {
-          const messageDiv = document.createElement('div');
-          messageDiv.className = 'follower-message-item';
-          messageDiv.innerHTML = `
-              <textarea class="follower-message-textarea">${message}</textarea>
-              <button class="follower-delete-btn" data-index="${index}">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M2 4h12m-1 0l-.867 10.4A2 2 0 0110.138 16H5.862a2 2 0 01-1.995-1.6L3 4h10M6 4V2a1 1 0 011-1h2a1 1 0 011 1v2H6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-              </button>
-          `;
-          messagesList.appendChild(messageDiv);
+
+  // Intentar obtener mensajes del localStorage
+  const savedMessages = localStorage.getItem('followerMessages');
+
+  if (savedMessages) {
+      // Si hay mensajes guardados, usarlos
+      followerMessages = JSON.parse(savedMessages);
+  } else {
+      // Si no hay mensajes guardados, usar los predefinidos
+      followerMessages = [
+          "¡Hola! Vi que me seguiste y quiero agradecerte. ¿Qué te parece mi contenido?",
+          "¡Gracias por seguirme! Me encantaría saber qué te pareció mi perfil 😊",
+          "¡Hey! Gracias por el follow. ¿Qué tipo de contenido te gustaría ver más?"
+      ];
+      // Guardar los mensajes predefinidos en localStorage
+      localStorage.setItem('followerMessages', JSON.stringify(followerMessages));
+  }
+   // obtener si la persona queria configurar el envío de mensajes previos!
+   const shouldSendMessageToNewFollowersLocalStorage = localStorage.getItem('shouldSendMessageToNewFollowers');
+   if (shouldSendMessageToNewFollowersLocalStorage) {
+    shouldSendMessageToNewFollowers = shouldSendMessageToNewFollowersLocalStorage === 'true';
+    // activate checkbox
+    document.getElementById('sendMessageToNewFollowersCheckbox').checked = shouldSendMessageToNewFollowers;
+    toggleMessageButton();
+   }
+
+
+
+function renderMessages() {
+  messagesList.innerHTML = '';
+    
+    // Renderizar mensajes existentes
+    followerMessages.forEach((message, index) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'follower-message-item';
+        messageDiv.innerHTML = `
+            <div style="display: flex; flex-direction: column; width: 100%;">
+                <textarea class="follower-message-textarea">${message}</textarea>
+                <button class="insert-name-btn" style="
+                    background-color: #007bff;
+                    color: white;
+                    padding: 4px 8px;
+                    border: none;
+                    border-radius: 3px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    margin-top: 5px;
+                    align-self: flex-start;">
+                    Introducir nombre
+                </button>
+            </div>
+            <button class="follower-delete-btn" data-index="${index}">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 4h12m-1 0l-.867 10.4A2 2 0 0110.138 16H5.862a2 2 0 01-1.995-1.6L3 4h10M6 4V2a1 1 0 011-1h2a1 1 0 011 1v2H6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        `;
+        messagesList.appendChild(messageDiv);
+
+        // Agregar listener para guardar cambios en el texto
+        const textarea = messageDiv.querySelector('.follower-message-textarea');
+        textarea.addEventListener('input', () => {
+            followerMessages[index] = textarea.value;
+            localStorage.setItem('followerMessages', JSON.stringify(followerMessages));
+        });
+
+        // Agregar listener para el botón de insertar nombre
+        const insertNameBtn = messageDiv.querySelector('.insert-name-btn');
+        insertNameBtn.addEventListener('click', () => {
+            const cursorPos = textarea.selectionStart;
+            const textBefore = textarea.value.substring(0, cursorPos);
+            const textAfter = textarea.value.substring(textarea.selectionEnd);
+            
+            textarea.value = textBefore + '[NOMBRE]' + textAfter;
+            followerMessages[index] = textarea.value;
+            localStorage.setItem('followerMessages', JSON.stringify(followerMessages));
+            
+            // Colocar el cursor después del [NOMBRE] insertado
+            const newCursorPos = cursorPos + '[NOMBRE]'.length;
+            textarea.focus();
+            textarea.setSelectionRange(newCursorPos, newCursorPos);
+        });
+    });
+
+  // Agregar botón de "Agregar mensaje" si hay menos de 3 mensajes
+  if (followerMessages.length < 3) {
+      const addButtonDiv = document.createElement('div');
+      addButtonDiv.className = 'follower-message-item add-message-btn';
+      addButtonDiv.innerHTML = `
+          <button class="add-message-button" style="
+              background-color: #4CAF50;
+              color: white;
+              padding: 8px 16px;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+              font-size: 14px;
+              width: 100%;
+              margin-top: 10px;">
+              + Agregar mensaje
+          </button>
+      `;
+      messagesList.appendChild(addButtonDiv);
+
+      // Agregar event listener al botón
+      addButtonDiv.querySelector('.add-message-button').addEventListener('click', () => {
+          followerMessages.push(''); // Agregar mensaje vacío
+          localStorage.setItem('followerMessages', JSON.stringify(followerMessages));
+          renderMessages();
       });
   }
+}
+
+messagesList.addEventListener('click', (e) => {
+  if (e.target.closest('.follower-delete-btn')) {
+      const index = e.target.closest('.follower-delete-btn').dataset.index;
+      followerMessages.splice(index, 1);
+      localStorage.setItem('followerMessages', JSON.stringify(followerMessages));
+      renderMessages();
+  }
+});
+
 
 
   closeBtn.addEventListener('click', () => {
       modal.style.display = 'none';
   });
 
-  messagesList.addEventListener('click', (e) => {
+  messagesList.addEventListener('click', async (e) => {
       if (e.target.closest('.follower-delete-btn')) {
           const index = e.target.closest('.follower-delete-btn').dataset.index;
           followerMessages.splice(index, 1);
-          renderMessages();
+          // remove from database
+          let res = await HowerAPI.removeFollowerMessages(username, index);
+          if (!res) {
+            alert("No se pudo eliminar el mensaje, por favor, inténtalo más tarde...");
+          } else {
+            renderMessages();
+          }
       }
   });
 
@@ -5235,6 +5356,16 @@ function delayCounter(milliseconds) {
 }
 
 
+async function getListWithUsernamesAndNames(usernames) {
+  // for each profle
+  let listWithUsernamesAndNames = [];
+  for (let username of usernames) {
+    let profile = await getProfile(username);
+    listWithUsernamesAndNames.push({ username: username, name: profile.name });
+  }
+  return listWithUsernamesAndNames;
+}
+
 
 async function sendInstagramDMMessages() {
   // restart vars
@@ -5920,15 +6051,9 @@ async function sendInstagramDMMessages() {
        document.getElementById('loadingFollowersOverlay').style.display = 'none';
        document.getElementById('loadingFollowersPopup').style.display = 'none';
 
-       // modify each listNewFollowers to be a string 
-       // separated with comas and this format
-       // ",usernamewithoutlink,,,true"
-       // let listNewFollowersString = listNewFollowers.map(follower => `,${follower.split("www.instagram.com/")[1].split("/")[0]},,,true`).join('');
-       for (let i = 0; i < listNewFollowers.length; i++) {
-        listNewFollowers[i] = `,${listNewFollowers[i].split("www.instagram.com/")[1].split("/")[0]},,,true`;
-       }
-      
        // add the listNewFollowwers to the messagesToSendNewFollowers
+       // remove repeated strings inside the list
+       listNewFollowers = [...new Set(listNewFollowers)];
        linesToUse = [...listNewFollowers, ...linesToUse];
      }
  
@@ -5965,8 +6090,7 @@ async function sendInstagramDMMessages() {
 
       // check si es buen usuario
       let personalization = "";
-
-      if (usersMessageSentSet.size > 0 && (usersMessageSentSet.has(username) || usersMessageSentSet.has(username + "_NOTSENT"))) { // and check if for username + "_NOTSENT"
+      if (usersMessageSentSet.size > 0 && (usersMessageSentSet.has(username) || usersMessageSentSet.has(username + "_NOTSENT") || usersMessageSentSet.has(username.split("-FOLLOWER")[0]) || usersMessageSentSet.has(username + "-FOLLOWER") || usersMessageSentSet.has(username.split("-FOLLOWER")[0] + "_NOTSENT") || usersMessageSentSet.has(username + "-FOLLOWER_NOTSENT"))) { // and check if for username + "_NOTSENT"
         if (DEBUG) console.error(`[HOWER] - Ya vimos al usuario -> ${username} CONTINUANDO - [WINDOW:${windowMessagesId}]`);
 
         // already seen user
@@ -6037,7 +6161,7 @@ async function sendInstagramDMMessages() {
     if (DEBUG) console.error(`[HOWER] - Actualizando ventana con USERNAME!-> ${username} - [WINDOW:${windowMessagesId}]`);
 
     await chrome.tabs.update(instaTab.id, {
-      url: `https://www.instagram.com/${username}/`,
+      url: `https://www.instagram.com/${username.split("-FOLLOWER")[0]}/`,
       //url: `https://www.instagram.com/`,
     });
 
@@ -6159,6 +6283,7 @@ async function sendInstagramDMMessages() {
         messagesToSendNewFollowers: followersMessageSent,
         username,
         messagesLimit: messageLimit,
+        followerMessages: followerMessages
       });
 
       if (DEBUG) console.error(`[HOWER] - Saliendo de Enviando MENSAJES!! ${getCurrentDateTime()} -  Respuesta -> ${response} - [WINDOW:${windowMessagesId}]`);
