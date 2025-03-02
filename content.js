@@ -2399,7 +2399,7 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
       request.username,
       request.messageToSend,
       request.followerMessages
-    )
+    );
 
     sendResponse(response);
   } else if (request.action === "loginInstagram") {
