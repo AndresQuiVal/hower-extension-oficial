@@ -1311,6 +1311,9 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 let followerMessages = [
+  // "Hi [NOMBRE]! Thanks for following me 😊 hey just curious... What interested you about my profile?",
+  // "Welcome [NOMBRE]! 👋 I'm glad you were interested in my content",
+  // "Thanks for the follow [NOMBRE]! 🌟 Where are you following me from?"
   "¡Hola [NOMBRE]! Gracias por seguirme 😊 oye curiosidad... ¿Qué te interesó de mi perfil?",
   "¡Bienvenido/a [NOMBRE]! 👋 Me alegra que te haya interesado mi contenido",
   "¡Gracias por el follow [NOMBRE]! 🌟 ¿De dónde me sigues?"
@@ -1399,6 +1402,9 @@ document.addEventListener('DOMContentLoaded', function() {
           "¡Hola! Vi que me seguiste y quiero agradecerte. ¿Qué te parece mi contenido?",
           "¡Gracias por seguirme! Me encantaría saber qué te pareció mi perfil 😊",
           "¡Hey! Gracias por el follow. ¿Qué tipo de contenido te gustaría ver más?"
+          // "Hi! I saw you followed me and I want to thank you. What do you think about my content?",
+          // "Thanks for following me! I'd love to know what you thought about my profile 😊",
+          // "Hey! Thanks for the follow. What kind of content would you like to see more of?"
       ];
       // Guardar los mensajes predefinidos en localStorage
       localStorage.setItem('followerMessages', JSON.stringify(followerMessages));
@@ -6261,6 +6267,7 @@ async function sendInstagramDMMessages() {
     )} minutos`;
     console.log(responseMessage);
 
+  
 
     try {
       if (DEBUG) console.error(`[HOWER] - Enviando MENSAJES!! ${getCurrentDateTime()} - [WINDOW:${windowMessagesId}]`);
@@ -6343,6 +6350,8 @@ async function sendInstagramDMMessages() {
     // if (messageSent || isPrivateAccount) {
     //   break;
     // }
+
+
 
     if (stopMessages === true) {
       return;

@@ -32,6 +32,28 @@ var RANDOM_MESSAGES_FOR_STORIES = [
   "¡Qué tal [NOMBRE]! Te mandé un DM",
   "Hey [NOMBRE]! ¿Todo marcha bien?",
   "¡Hola [NOMBRE]! Revisa tu bandeja de mensajes"
+  // "Hi! [NOMBRE], how are you?",
+  // "Hey [NOMBRE], hey! I left you a message on your profile!",
+  // "Hi [NOMBRE]! How's your day?",
+  // "Hey [NOMBRE]! I wrote you in DM 😊",
+  // "Hi [NOMBRE]! Everything okay?",
+  // "Hey [NOMBRE]! I sent you a direct message",
+  // "How's it going [NOMBRE]! How's everything?",
+  // "Hi [NOMBRE]! I left you an important message",
+  // "Hi [NOMBRE]! Hope you're doing great",
+  // "Hey [NOMBRE]! I sent you a DM, check it out",
+  // "What's up [NOMBRE]! How's it going?",
+  // "Hi [NOMBRE]! I wrote you a direct message",
+  // "Hey [NOMBRE]! Everything alright?",
+  // "Hi [NOMBRE]! I sent you a message in DM",
+  // "How's it going [NOMBRE]? How have you been?",
+  // "Hey [NOMBRE]! I left you an important message in DM",
+  // "Hi [NOMBRE]! How's your week going?",
+  // "Hey [NOMBRE]! I wrote you a direct message",
+  // "Hi [NOMBRE]! How are you doing?",
+  // "How's it going [NOMBRE]! I sent you a DM",
+  // "Hey [NOMBRE]! Is everything going well?",
+  // "Hi [NOMBRE]! Check your message inbox"
 ];
 
 var followerMessages = [];
@@ -950,7 +972,9 @@ function checkIfErrorIsShownBanned() {
 }
 
 async function validateGoodProfile(level) {
-  if (level === 1) {
+  if (level === 0) {
+    return true;
+  } else if (level === 1) {
     return await validateHasProfilePicture() && await validateTrustedPostsCount();
   } else if (level === 2) {
     return await validateHasProfilePicture() && await validateTrustedPostsCount() && await validateHasHighlights();
@@ -2093,9 +2117,12 @@ async function checkGender(full_name) {
   }
 }
 
+
+
 function getUsernamesNewFollowers() {
+  console.error("...OBTENIENDO LOS NUEVOS SEGUIDORES...");
   return new Promise((resolve) => {
-      let usernames = [];
+      let usernames = new Set();
       const svg = document.querySelector('svg[aria-label="Notifications"], svg[aria-label="Notificaciones"]');
       if (!svg) {
           console.log("No se encontró el ícono de notificaciones");
@@ -2113,48 +2140,51 @@ function getUsernamesNewFollowers() {
       // Hacer click en el link
       linkParent.click();
 
-      // Esperar a que se cargue el panel de notificaciones
       setTimeout(() => {
-          const headingDivs = document.querySelectorAll('div[role="heading"]')[0];
-          console.log("headingDivs", headingDivs);
-
-          if (!headingDivs) {
-              console.log("No se encontró el span de notificaciones");
+          const spans = Array.from(document.querySelectorAll('span')).filter(span => 
+              span.textContent === 'Notificaciones' || span.textContent === "Notifications" // TODO: TEXT TO SERVER
+          );
+          const lastNotificationSpan = spans[spans.length - 1];
+          
+          if (!lastNotificationSpan) {
+              console.log("No se encontró el span de Notificaciones");
               resolve([]);
               return;
           }
 
-          let parentDiv = headingDivs;
-          for (let i = 0; i < 2; i++) {
+          let parentDiv = lastNotificationSpan;
+          for (let i = 0; i < 3; i++) {
               parentDiv = parentDiv.parentElement;
-              console.log("parentDiv", parentDiv);
               if (!parentDiv) {
-                  console.log("No se encontró el div padre necesario");
+                  console.log(`No se pudo subir al nivel ${i + 1}`);
                   resolve([]);
                   return;
               }
           }
 
-          console.log("parentDiv", parentDiv);
+          // Buscar spans que contengan "comenzó a seguirte"
+          const followElements = Array.from(parentDiv.querySelectorAll('span')).filter(span => 
+            span.textContent.includes('comenzó a seguirte') || span.textContent.includes('started following you') // TODO: TEXT TO SERVER
+          );
 
-          const targetDiv = parentDiv.children[1]?.children[1];
-          if (!targetDiv) {
-              console.log("No se encontró el div objetivo");
-              resolve([]);
-              return;
-          }
-
-          const userLinks = targetDiv.querySelectorAll('a[href^="/"]');
-          
-          userLinks.forEach(link => {
-              const username = link.getAttribute('href').replace('/', '');
-              if (username) {
-                  usernames.push(`,${username.split("/")[0]}-FOLLOWER,,,true`);
+          followElements.forEach(span => {
+              // El <a> tag está como primer hijo dentro del mismo span
+              const aTag = span.querySelector('a[href^="/"]');
+              if (aTag) {
+                  const href = aTag.getAttribute('href').replace('/', '');
+                  const splitValues = href.split("/");
+                  
+                  if (splitValues[0] === 'stories') return;
+                  if (Boolean(splitValues[1])) return;
+                  
+                  if (splitValues[0]) {
+                      usernames.add(`,${splitValues[0]}-FOLLOWER,,,true`);
+                  }
               }
           });
 
           resolve([...usernames]);
-      }, 1000);
+      }, 5000);
   });
 }
 
@@ -2170,6 +2200,7 @@ async function sendMessageComplete(request, shouldSendMessageToNewFollowers) {
   if (request.username.includes("-FOLLOWER")) {
     isNewFollower = true;
     followerMessages = request.followerMessages;
+    // request.selectedProspectFilterLevel = 1; // basic level!
   }
 // await openUserProfile(
     //   request.username
@@ -2235,7 +2266,7 @@ async function sendMessageComplete(request, shouldSendMessageToNewFollowers) {
     try {
       sendMessagesToPreviousConversations = request.sendMessagesToPreviousConversations;
       if (request.username.includes("-FOLLOWER")) {
-        sendMessagesToPreviousConversations = false; // force user to this!
+        sendMessagesToPreviousConversations = false; // TODO: was in false
       }
     } catch (error) {
       logToFile(`[INSTA] Error al obtener sendMessagesToPreviousConversations - ${error}`);
@@ -2243,7 +2274,7 @@ async function sendMessageComplete(request, shouldSendMessageToNewFollowers) {
 
     // check if the user already follows the user
     let userAlreadyFollows = await checkIfUserAlreadyFollows();
-    if (userAlreadyFollows) {
+    if (userAlreadyFollows && !isNewFollower) {
       logToFile(`[INSTA] - No se pudo enviar mensaje - el usuario ya sigue al usuario!!`);
       chrome.runtime.sendMessage({
         action: "userMessageNotAllowed", // 
@@ -2351,6 +2382,28 @@ async function sendMessageComplete(request, shouldSendMessageToNewFollowers) {
       "¡Qué tal [NOMBRE]! Te mandé un DM",
       "Hey [NOMBRE]! ¿Todo marcha bien?",
       "¡Hola [NOMBRE]! Revisa tu bandeja de mensajes"
+      // "Hi! [NOMBRE], how are you?",
+      // "Hey [NOMBRE], hey! I left you a message on your profile!",
+      // "Hi [NOMBRE]! How's your day going?",
+      // "Hey [NOMBRE]! I wrote you in DM 😊",
+      // "Hi [NOMBRE]! Everything good?",
+      // "Hey [NOMBRE]! I sent you a direct message",
+      // "How's it going [NOMBRE]! How's everything?",
+      // "Hi [NOMBRE]! I left you an important message",
+      // "Hi [NOMBRE]! Hope you're doing great",
+      // "Hey [NOMBRE]! I sent you a DM, check it out",
+      // "Heey [NOMBRE]! How's it going?",
+      // "Hi [NOMBRE]! I wrote you a direct message",
+      // "Hey [NOMBRE]! Everything okay?",
+      // "Hi [NOMBRE]! I sent you a message in DM",
+      // "How are you [NOMBRE]? How have you been?",
+      // "Hey [NOMBRE]! I left you an important message in DM",
+      // "Hi [NOMBRE]! How's your week going?",
+      // "Hey [NOMBRE]! I wrote you a direct message",
+      // "Hi [NOMBRE]! How are you doing?",
+      // "How's it going [NOMBRE]! I sent you a DM",
+      // "Hey [NOMBRE]! Is everything going well?",
+      // "Hi [NOMBRE]! Check your message inbox"
     ].map(message => message.replaceAll("[NOMBRE]", full_name));
     
     
@@ -2366,6 +2419,15 @@ async function sendMessageComplete(request, shouldSendMessageToNewFollowers) {
     notSendMessageStories = request.notSendMessageStories;
     
     logToFile(`[INSTA] - Empezando envio de mensaje'`);
+
+    // aqui va lo de enviar mensaje
+    let messageReturn = sendMessage(
+      request.username,
+      request.messageToSend,
+      request.followerMessages
+    );
+
+    return messageReturn;
 }
 
 
@@ -2394,12 +2456,18 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
 
   if (request.action === "sendMessage") {
     
-    await sendMessageComplete(request, request.shouldSendMessageToNewFollowers);
-    response.message = sendMessage(
-      request.username,
-      request.messageToSend,
-      request.followerMessages
-    );
+    let message = await sendMessageComplete(request, request.shouldSendMessageToNewFollowers);
+    // agregame  un timeout aquí
+    if (message) {
+      response.message = message;
+    }
+    // if (res) {
+    //   response.message = sendMessage(
+    //     request.username,
+    //     request.messageToSend,
+    //     request.followerMessages
+    //   );
+    // }
 
     sendResponse(response);
   } else if (request.action === "loginInstagram") {
@@ -2452,6 +2520,8 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     // get the names of the usernames
     // let listWithUsernamesAndNames = await getListWithUsernamesAndNames(usernamesNewFollowers);
     console.error("USERS NEW FOLLOWERS - " + JSON.stringify(usernamesNewFollowers));
+
+    // await new Promise(resolve => setTimeout(resolve, 180000)); // Timeout de 3 minutos
     chrome.runtime.sendMessage({
       action: "readyListNewFollowers",
       usernamesNewFollowers: usernamesNewFollowers
