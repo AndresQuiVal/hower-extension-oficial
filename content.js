@@ -8,6 +8,7 @@ var messagesLimit = 50;
 var notSendMessageStories = false;
 var sendMessagesToPreviousConversations = false;
 var isNewFollower = false;
+var shouldRandomizeMessages = false;
 
 var RANDOM_MESSAGES_FOR_STORIES = [
   "Hola! [NOMBRE], cómo estás?",
@@ -1307,14 +1308,19 @@ function clickComposeButton(message, followerMessages) {
         let couldSendMessage = false;
   
         if (await validateHasStoryActive()) {
-          logToFile(`[INSTA] - empezando clibkButtonIfNotDisabled()'`);
-          // pause story and send message?
-          couldSendMessage = await clickButtonIfNotDisabled();
-          logToFile(`[INSTA] - terminando clibkButtonIfNotDisabled()'`);
+          if (!shouldRandomizeMessages || Math.random() < 0.5) {
+            // 50% chance de enviar mensaje por story cuando shouldRandomizeMessages es true
+            logToFile(`[INSTA] - empezando clibkButtonIfNotDisabled()'`);
+            couldSendMessage = await clickButtonIfNotDisabled();
+            logToFile(`[INSTA] - terminando clibkButtonIfNotDisabled()'`);
+          } else {
+            // El otro 50% irá por DM cuando shouldRandomizeMessages es true
+            logToFile(`[INSTA] - randomizado para DM, enviamos sendDMMessage()'`);
+            couldSendMessage = await sendDMmesssage();
+            logToFile(`[INSTA] - randomizado para DM, terminado sendDMMessage()'`);
+          }
         } else {
-          // TODO: Descomentamos por ahora
           logToFile(`[INSTA] - no se pudo con story, enviamos sendDMMessage()'`);
-  
           couldSendMessage = await sendDMmesssage();
           logToFile(`[INSTA] - no se pudo story, terminado sendDMMessage()'`);
         }
@@ -2315,6 +2321,11 @@ async function sendMessageComplete(request, shouldSendMessageToNewFollowers) {
         usernameMessageSent: request.username
       });
       return;
+    }
+
+    if (request.selectedProspectFilterLevel === 3 || request.selectedProspectFilterLevel === '3') {
+      // entonces hacer aleatorio el envío de mensajes
+      shouldRandomizeMessages = true;
     }
 
     let full_name = request.full_name;
