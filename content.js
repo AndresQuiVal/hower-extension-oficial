@@ -840,8 +840,8 @@ function focusOnTextarea() {
                 usernameMessageSent: usernameInsta
               });
             }
-          }, getRandomNumber(27000,30000));  // 30,000 milisegundos = 30 segundos
-        }, getRandomNumber(1000,2000));
+          }, getRandomNumber(29000,38000));  // 30,000 milisegundos = 30 segundos
+        }, getRandomNumber(9000,10000));
         return true;
       } else {
         logToFile(`[INSTAGRAM] - NO hay text area para enfocar!!'`);
@@ -940,7 +940,7 @@ function clickButtonIfNotDisabled() {
         return couldSendMessage;
 
       // }, getRandomNumber(5000,8000));
-    }, getRandomNumber(2000,3000)); // changed
+    }, getRandomNumber(10000,11000)); // changed
 
     // }
     // }
@@ -1217,11 +1217,11 @@ async function sendDMmesssage() {
                     });
                   }
                 }
-              }, getRandomNumber(27000,30000));  // 30,000 milisegundos = 30 segundos
-            }, getRandomNumber(2000,3000));
-          }, getRandomNumber(3000,4000));
+              }, getRandomNumber(35000,38000));  // 30,000 milisegundos = 30 segundos
+            }, getRandomNumber(10000,11000));
+          }, getRandomNumber(11000,12000));
 
-        }, getRandomNumber(1000,2000));
+        }, getRandomNumber(9000,10000));
 
       
       // setTimeout(() => {
@@ -1247,7 +1247,7 @@ async function sendDMmesssage() {
     }
 
     // refresh
-  }, 5000);
+  }, 13000);
 }
 
 function delay(ms) {
@@ -1329,8 +1329,8 @@ function clickComposeButton(message, followerMessages) {
       }
 
         // check if button for stories is active
-    }, getRandomNumber(3000,4500)); // aumentamos el tiempo de espera para que pueda seguir a los prsoepctos
-  }, getRandomNumber(2000,3000));
+    }, getRandomNumber(11000,12500)); // aumentamos el tiempo de espera para que pueda seguir a los prsoepctos
+  }, getRandomNumber(10000,11000));
 }
 
 
@@ -1349,7 +1349,7 @@ function clickButtonWithText(texts) {
           if (texts.indexOf(button.innerText.trim()) !== -1) {
             chrome.runtime.sendMessage({ action: "stopFollowing", instaTabId: instaTabId });
           } 
-        }, 5000);
+        }, 13000);
       }
     }
   }
@@ -1396,7 +1396,7 @@ function findAndPauseStory() {
     currentAttemptsPauseStory++;
     
     if (!isButtonPauseFocused) {
-      setTimeout(findAndPauseStory, 8000); // Adjust the delay as needed
+      setTimeout(findAndPauseStory, 16000); // Adjust the delay as needed
     }
   } else {
     
@@ -1530,7 +1530,7 @@ function clickButtonsWithDelay(texts) {
       }
       
       resolve(false);
-    }, 2000);
+    }, 10000);
   });
 }
 
@@ -1768,8 +1768,8 @@ function logoutInstagram() {
         } else {
           console.log("Botón no encontrado.");
         }
-      }, 5000);
-    }, 10000);
+      }, 13000);
+    }, 18000);
   } else {
     console.log("Link no encontrado.");
   }
@@ -1800,9 +1800,9 @@ function loginInstagram(username, password, instaTabId, windowId) {
             return;
           }
         });
-      }, 20000); // 20 seconds
-    }, 5000);
-  }, 5000); // 5 seconds
+      }, 28000); // 20 seconds
+    }, 13000);
+  }, 13000); // 5 seconds
 }
 
 async function checkIsPrivate() {
@@ -1817,7 +1817,7 @@ async function checkIsPrivate() {
             logToFile("[HOWER] Esta cuenta NO es privada!!");
               resolve(false); // Resolve the promise with 'false' if neither text is found
           }
-      }, 2000); // Espera 4 segundos antes de verificar el texto
+      }, 10000); // Espera 4 segundos antes de verificar el texto
   });
 }
 
@@ -1886,7 +1886,7 @@ async function openUserProfile(username) {
       setTimeout(() => {
         clearInterval(intervalId);
         resolve(false); // Resolvemos con false si no se encuentra después de 10 segundos
-      }, 10000); // Cancelar después de 10 segundos
+      }, 18000); // Cancelar después de 10 segundos
     });
 
     if (!profileFound) {
@@ -1997,7 +1997,7 @@ async function getFullName() {
       
       res = res.split(" ")[0];
       resolve(res);
-    }, 4000);
+    }, 13000);
   });
 }
 
@@ -2190,7 +2190,7 @@ function getUsernamesNewFollowers() {
           });
 
           resolve([...usernames]);
-      }, 5000);
+      }, 13000);
   });
 }
 
@@ -2501,7 +2501,7 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     //     console.log("ENTRANDO AL LOGIN!!");
     //     loginInstagram(request.username, request.password, request.instaTabId);
     //   }, 10000);
-    }, 5000);
+    }, 13000);
   } else if (request.action === "removeCaptchas") {
     logToFile(`[INSTAGRAM] - Enfocando Ventana!!'`);
     chrome.runtime.sendMessage({
@@ -2519,12 +2519,12 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     //     console.log("ENTRANDO AL LOGIN!!");
     //     loginInstagram(request.username, request.password, request.instaTabId);
     //   }, 10000);
-    }, 5000);
+    }, 13000);
   } else if (request.action === "couldSendMessage") {
     findBlockedMessageDivs();
   } else if (request.action === "listNewFollowers") {
     // some time delay
-    await new Promise(resolve => setTimeout(resolve, 10000));
+    await new Promise(resolve => setTimeout(resolve, 18000));
 
     let usernamesNewFollowers = await getUsernamesNewFollowers();
 

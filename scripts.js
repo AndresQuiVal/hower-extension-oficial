@@ -6343,7 +6343,7 @@ async function sendInstagramDMMessages() {
     // await delay(150000);
     try {
       abortController = new AbortController();
-      await delayStanding(270000, abortController.signal);
+      await delayStanding(600000, abortController.signal);
     } catch (e) {
       if (DEBUG) console.error("[HOWER] Saliendo del timing! o no se pudo enviar el mensaje o es privada!");
     }
