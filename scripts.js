@@ -21,7 +21,7 @@ var countCaptcha = 0; // this variable works for capthca control, it captcha is 
 var end_cursor = ""; // cursor for keep inspecting the users after retake inspection
 var requiresFileToContinue = false;
 var abortController = new AbortController();
-var notSendMessageStories = false;
+var notSendMessageStories = Math.random() < 0.5;
 var forceInspector = false;
 var ownerPostId = false;
 var searchByComments = true;
@@ -2981,6 +2981,28 @@ document.getElementById("closeButtonConf").addEventListener("click", closePopupC
 
 document.getElementById("emailPrepared").addEventListener("input", async function () {
   let emailValue = document.getElementById("emailPrepared").value;
+  
+  const matchPost = emailValue.match(/\/(p|reel)\/(.*?)(\/#|\/|$)/);
+  if (matchPost) {
+    // Si es una URL de post/reel, realizar las acciones automáticas
+    const postInput = document.getElementById('emailPreparedPost');
+    showUrlPostWindow();
+    postInput.value = emailValue;
+    postInput.dispatchEvent(new Event('input'));
+    
+    return;
+  }
+  
+  // Si no es un post/reel, extraer el nombre de usuario de una URL de Instagram
+  if (emailValue.includes('instagram.com/')) {
+    // Obtener todo lo que está después de instagram.com/
+    let username = emailValue.split('instagram.com/')[1];
+    // Si hay más slashes, solo tomar la primera parte (el nombre de usuario)
+    username = username.split('/')[0];
+    // Actualizar el valor del input con solo el nombre de usuario
+    document.getElementById("emailPrepared").value = username;
+    emailValue = username;
+  }
   // Remove the '@' character from the string
   let updatedValue = emailValue.replace(/@/g, '');
 
@@ -2990,6 +3012,9 @@ document.getElementById("emailPrepared").addEventListener("input", async functio
   emailValue = document.getElementById("emailPrepared").value;
 
   const query = emailValue;
+
+  
+
   if (query) {
     await fetchInstagramData(query);
   } else {
@@ -6650,10 +6675,6 @@ async function sendInstagramDMMessages() {
       //url: `https://www.instagram.com/`,
     });
 
-    if (DEBUG) console.error(`[HOWER] - Actualizada ventana con USERNAME!-> ${username} - [WINDOW:${windowMessagesId}]`);
-
-
-    // Wait for the tab to be fully loaded
     if (DEBUG) console.error(`[HOWER] - Esperando que cargue ventana!-> ${username} - [WINDOW:${windowMessagesId}]`);
 
     await new Promise((resolve) => {
@@ -7613,11 +7634,11 @@ document
   .addEventListener("click", showDownloadPopup);
 
 document.getElementById("AIButton").addEventListener("click", function () {
-  window.open("https://chatgpt.com/g/g-rB5jNLYzV-hower-messages", "_blank");
+  window.open("https://chatgpt.com/g/g-67d37e911af88191b2c6bc19ae400953-hower-ai-messages", "_blank");
 });
 
 document.getElementById("AIButton2").addEventListener("click", function () {
-  window.open("https://chatgpt.com/g/g-rB5jNLYzV-hower-messages", "_blank");
+  window.open("https://chatgpt.com/g/g-67d37e911af88191b2c6bc19ae400953-hower-ai-messages", "_blank");
 });
 
 
@@ -9251,6 +9272,17 @@ document.getElementById("cancelInstagramMessage4").addEventListener('click', () 
 document.getElementById("cancelInstagramMessage5").addEventListener('click', () => {
   const messagePrepared = document.getElementById("messagePrepared");
 
+  // get only the first element of message prepared and set it
+  let valueFirstTextbox = "";
+  try {
+    valueFirstTextbox = messagePrepared.value.split("&&")[0];
+  } catch (e) {
+    valueFirstTextbox = "";
+    debugConsoleLog("HUBO ALGUN ERROR AL SEPARAR LAS CADENAS Y REGRESAR AL APARTADO DE MENSAJES!!! REVISAR");
+  }
+
+  messagePrepared.value = valueFirstTextbox;
+
   // Disparar evento input
   messagePrepared.dispatchEvent(new Event('input', {
     bubbles: true,
@@ -9627,7 +9659,7 @@ document.getElementById("prospectByAccount").addEventListener('click', async () 
   setSlideActive('carousel__slide4');
 });
 
-document.getElementById("prospectByPost").addEventListener('click', async () => {
+async function showUrlPostWindow() {
   if (!await instagramIsLoggedIn()) {
     showWelcomePopupNewUpdateDetails("prospectByPost");
     return;
@@ -9639,6 +9671,10 @@ document.getElementById("prospectByPost").addEventListener('click', async () => 
   document.getElementById('searchByPostContent').style.display = 'flex';
 
   setSlideActive('carousel__slide4');
+}
+
+document.getElementById("prospectByPost").addEventListener('click', async () => {
+  await showUrlPostWindow();
 });
 
 function disablePauseMessagesButton() {

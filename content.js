@@ -2384,7 +2384,11 @@ async function sendMessageComplete(request, shouldSendMessageToNewFollowers) {
     // logToFile(`[INSTA] Verificando es privada - ${request.username}`);
     
     
+    
     notSendMessageStories = request.notSendMessageStories;
+    if ((request.selectedProspectFilterLevel === "3" || request.selectedProspectFilterLevel === 3) && notSendMessageStories) {
+      notSendMessageStories = Math.random() < 0.5; // 50% de probabilidad de ser true o false
+    }
     
     logToFile(`[INSTA] - Empezando envio de mensaje'`);
 
