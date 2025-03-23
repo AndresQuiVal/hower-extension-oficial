@@ -2143,61 +2143,64 @@ function getUsernamesNewFollowers() {
           return;
       }
 
-      const linkParent = svg.closest('a');
-      if (!linkParent) {
-          console.log("No se encontró el link padre");
-          resolve([]);
-          return;
-      }
-
-      // Hacer click en el link
-      linkParent.click();
-
       setTimeout(() => {
-          const spans = Array.from(document.querySelectorAll('span')).filter(span => 
-              span.textContent === 'Notificaciones' || span.textContent === "Notifications" // TODO: TEXT TO SERVER
-          );
-          const lastNotificationSpan = spans[spans.length - 1];
-          
-          if (!lastNotificationSpan) {
-              console.log("No se encontró el span de Notificaciones");
-              resolve([]);
-              return;
-          }
 
-          let parentDiv = lastNotificationSpan;
-          for (let i = 0; i < 3; i++) {
-              parentDiv = parentDiv.parentElement;
-              if (!parentDiv) {
-                  console.log(`No se pudo subir al nivel ${i + 1}`);
-                  resolve([]);
-                  return;
-              }
-          }
+        const linkParent = svg.closest('a');
+        if (!linkParent) {
+            console.log("No se encontró el link padre");
+            resolve([]);
+            return;
+        }
 
-          // Buscar spans que contengan "comenzó a seguirte"
-          const followElements = Array.from(parentDiv.querySelectorAll('span')).filter(span => 
-            span.textContent.includes('comenzó a seguirte') || span.textContent.includes('started following you') // TODO: TEXT TO SERVER
-          );
+        // Hacer click en el link
+        linkParent.click();
 
-          followElements.forEach(span => {
-              // El <a> tag está como primer hijo dentro del mismo span
-              const aTag = span.querySelector('a[href^="/"]');
-              if (aTag) {
-                  const href = aTag.getAttribute('href').replace('/', '');
-                  const splitValues = href.split("/");
-                  
-                  if (splitValues[0] === 'stories') return;
-                  if (Boolean(splitValues[1])) return;
-                  
-                  if (splitValues[0]) {
-                      usernames.add(`,${splitValues[0]}-FOLLOWER,,,true`);
-                  }
-              }
-          });
+        setTimeout(() => {
+            const spans = Array.from(document.querySelectorAll('span')).filter(span => 
+                span.textContent === 'Notificaciones' || span.textContent === "Notifications" // TODO: TEXT TO SERVER
+            );
+            const lastNotificationSpan = spans[spans.length - 1];
+            
+            if (!lastNotificationSpan) {
+                console.log("No se encontró el span de Notificaciones");
+                resolve([]);
+                return;
+            }
 
-          resolve([...usernames]);
-      }, 5000);
+            let parentDiv = lastNotificationSpan;
+            for (let i = 0; i < 3; i++) {
+                parentDiv = parentDiv.parentElement;
+                if (!parentDiv) {
+                    console.log(`No se pudo subir al nivel ${i + 1}`);
+                    resolve([]);
+                    return;
+                }
+            }
+
+            // Buscar spans que contengan "comenzó a seguirte"
+            const followElements = Array.from(parentDiv.querySelectorAll('span')).filter(span => 
+              span.textContent.includes('comenzó a seguirte') || span.textContent.includes('started following you') // TODO: TEXT TO SERVER
+            );
+
+            followElements.forEach(span => {
+                // El <a> tag está como primer hijo dentro del mismo span
+                const aTag = span.querySelector('a[href^="/"]');
+                if (aTag) {
+                    const href = aTag.getAttribute('href').replace('/', '');
+                    const splitValues = href.split("/");
+                    
+                    if (splitValues[0] === 'stories') return;
+                    if (Boolean(splitValues[1])) return;
+                    
+                    if (splitValues[0]) {
+                        usernames.add(`,${splitValues[0]}-FOLLOWER,,,true`);
+                    }
+                }
+            });
+
+            resolve([...usernames]);
+        }, 15000);
+      }, 10000);
   });
 }
 
@@ -2485,7 +2488,7 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     findBlockedMessageDivs();
   } else if (request.action === "listNewFollowers") {
     // some time delay
-    await new Promise(resolve => setTimeout(resolve, 10000));
+    await new Promise(resolve => setTimeout(resolve, 15000));
 
     let usernamesNewFollowers = await getUsernamesNewFollowers();
 

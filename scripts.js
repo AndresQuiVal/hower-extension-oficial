@@ -6512,7 +6512,7 @@ async function sendInstagramDMMessages() {
        try {      
          // open the chrome window inside the user profile
          await chrome.tabs.update(instaTab.id, {
-           url: `https://www.instagram.com/`,
+           url: `https://www.instagram.com/hower.ai/`,
          });
  
          await new Promise(resolve => {
@@ -6530,6 +6530,8 @@ async function sendInstagramDMMessages() {
           instaTabId: instaTab.id,
           windowId: windowMessagesId,
         });
+
+        
   
         } catch (error) {
           if (DEBUG) console.error(`[HOWER:ERROR] - Error al obtener lista de nuevos seguidores -> ${error.toString()} - [WINDOW:${windowMessagesId}]`);
