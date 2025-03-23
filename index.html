@@ -641,6 +641,7 @@
 
         #buttonPopupInfo,
         #buttonPopupInfo2,
+        #buttonPopupInfoStories,
         #buttonPopupInfoInspection {
             border-radius: 50%;
             background-color: #7a60ff;
@@ -1578,12 +1579,27 @@
                     </div>
                     <br>
                     <div style="display: flex; align-items: center;">
-                        <label style="margin-right: 30px;">👉 Enviar mensaje a <br>historias</label>
+                        <label style="margin-right: 30px;">👉 Enviar mensajes a <br>historias</label>
                         <label class="switch" style="margin-right: 10px;">
                             <input type="checkbox" id="sendMessageStoriesCheckbox" checked>
                             <span class="slider round"></span>
                         </label>
                     </div>
+                    <button id="showStoriesMessagesBtn" style="display: none;" class="config-button">
+                        Configurar mensajes para stories
+                      </button>
+                      
+                      <!-- Modal para mensajes de stories -->
+                      <div id="storiesMessagesModal" class="modal" style="display: none;">
+                        <div class="modal-content">
+                          <span class="stories-modal-close">&times;</span>
+                          <h2>Mensajes para Stories</h2>
+                          <div id="storiesMessagesList">
+                            <!-- Aquí se renderizarán los mensajes -->
+                          </div>
+                        </div>
+                      </div>
+
                     <br>
                     <div style="display: flex; align-items: center; flex-wrap: wrap;">
                         <div style="display: flex; align-items: center; margin-right: 20px;">
@@ -1619,6 +1635,54 @@
                     </div>
                     
                     <style>
+                        #showStoriesMessagesBtn {
+                            margin-top: 10px;
+                            padding: 8px 16px;
+                            background-color: #7a60ff;
+                            color: white;
+                            border: none;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-size: 14px;
+                            }
+
+                            #showStoriesMessagesBtn:hover {
+                            background-color: #6346ff;
+                            }
+
+                            #storiesMessagesModal {
+                            position: fixed;
+                            z-index: 1000;
+                            left: 0;
+                            top: 0;
+                            width: 100%;
+                            height: 100%;
+                            background-color: rgba(0,0,0,0.4);
+                            }
+
+                            #storiesMessagesModal .modal-content {
+                            background-color: #fefefe;
+                            margin: 15% auto;
+                            padding: 20px;
+                            border: 1px solid #888;
+                            width: 80%;
+                            max-width: 600px;
+                            border-radius: 10px;
+                            position: relative;
+                            }
+
+                            .stories-modal-close {
+                            position: absolute;
+                            right: 10px;
+                            top: 5px;
+                            font-size: 28px;
+                            font-weight: bold;
+                            cursor: pointer;
+                            }
+
+                            .stories-modal-close:hover {
+                            color: #7a60ff;
+                            }
                     /* Estilo para el botón de ver mensajes */
                     .follower-messages-btn {
                         background-color: #4CAF50;
@@ -1710,7 +1774,7 @@
                     
                     <br>
                     <div style="display: flex; flex-direction: column;">
-                        <label style="margin-bottom: 15px;">👉 ¿A que tipo de prospecto contactar?</label>
+                        <label style="margin-bottom: 15px;">👉 ¿A qué tipo de prospecto contactar?</label>
                         <div class="level-slider-container">
                             <input type="range" min="1" max="3" value="1" class="level-slider" id="prospectLevelSlider">
                             <div class="level-labels">
@@ -1903,7 +1967,7 @@
             <br>
             <button id="validateButton">Validar contraseña</button>
             <br><br><br>
-            <p>Version: 1.1.2</p>
+            <p>Version: 1.2</p>
         </div>
     </div>
 
@@ -5362,6 +5426,28 @@
                                                 más su atención!</p>
                                         </div>
                                     </div><br>
+                                    <div style="display: flex; align-items: center;">
+                                        <label style="margin-right: 30px;">¿Enviar mensajes a historias?</label>
+                                        <label class="switch" style="margin-right: 10px;">
+                                            <input type="checkbox" id="sendMessageStoriesCheckboxPopup">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    
+                                        <button id="buttonPopupInfoStories" onclick="showInfoPopup()">i</button>
+                                        <div id="infoPopupStories" class="popup-info">
+                                            <span class="close-popup-info" id="buttonPopupInfoCloseStories" style="color: black;">&times;</span>
+                                            <p style="color: black;">Envia mensajes a las historias de los prospectos</p>
+                                            <img src="https://s6.gifyu.com/images/bbXOU.gif" alt="GIF explicativo" 
+                                                style="width: 150px; height: auto; margin-top: 10px; border-radius: 8px;">
+                                        </div>
+                                    </div>
+                                    <button id="configureStoriesMessages" style="display: block; margin: 10px auto; background-color: rgb(122, 96, 255); color: white; border: none; padding: 8px 16px; border-radius: 5px; font-size: 10px; cursor: pointer; font-family: Poppins, sans-serif; transition: background-color 0.3s; width: auto; align-items: center; gap: 6px;">  <!-- Espacio entre el ícono y el texto -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="13" width="13" viewBox="0 10 512 512" style="margin-top: 5px; margin-bottom: -2px;">
+                                            <path fill="currentColor" d="M448 80c8.8 0 16 7.2 16 16V415.8l-5-6.5-136-176c-4.5-5.9-11.6-9.3-19-9.3s-14.4 3.4-19 9.3L202 340.7l-30.5-42.7C167 291.7 159.8 288 152 288s-15 3.7-19.5 10.1l-80 112L48 416.3l0-.3V96c0-8.8 7.2-16 16-16H448zM64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm80 192a48 48 0 1 0 0-96 48 48 0 1 0 0 96z"></path>
+                                        </svg>
+                                          &nbsp;&nbsp;Configurar mensajes para stories
+                                    </button>
+                                    <br>
                                     <div style="display: flex; align-items: center; display: none;">
                                         <br>
                                         <label style="margin-right: 30px; display: none;">⚡️ Lead Booster 🔒</label>
@@ -5370,6 +5456,50 @@
                                             <span class="slider round"></span>
                                         </label>
                                     </div>
+
+                                    <div id="modalMessagesStories" class="modal" style="display: none; background-color: transparent;">
+                                        <div class="modal-content">
+                                            <span class="close" id="closeModalMessagesStories2">&times;</span>
+                                            <h2 style="color: black;">Tus Mensajes para Historias</h2>
+                                            <div id="storiesMessagesList2"></div> <!-- Aquí se renderizarán los mensajes -->
+                                        </div>
+                                    </div>
+                                    <style>
+
+.modal {
+    display: none; /* Oculto por defecto */
+    position: fixed; /* Fijo en la pantalla */
+    z-index: 1000; /* Asegúrate de que esté por encima de otros elementos */
+    left: 0;
+    top: 0;
+    width: 100%; /* Ancho completo */
+    height: 100%; /* Alto completo */
+    overflow: auto; /* Habilitar desplazamiento si es necesario */
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo semi-transparente */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% desde la parte superior y centrado */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Ancho del modal */
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+                                    </style>
 
 
                                     <br>

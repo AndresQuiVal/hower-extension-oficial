@@ -10,28 +10,36 @@ var sendMessagesToPreviousConversations = false;
 var isNewFollower = false;
 
 var RANDOM_MESSAGES_FOR_STORIES = [
-  "Hola! [NOMBRE], cómo estás?",
-  "Hey [NOMBRE], oye! te dejé un mensaje en tu perfil!",
-  "Hola [NOMBRE]! ¿Qué tal tu día?",
-  "Hey [NOMBRE]! Te escribí al DM 😊",
-  "¡Hola [NOMBRE]! ¿Todo bien?",
-  "¡Hey [NOMBRE]! Te mandé un mensaje directo",
-  "¡Qué tal [NOMBRE]! ¿Cómo va todo?",
-  "Hola [NOMBRE]! Te dejé un mensaje importante",
-  "¡Hola [NOMBRE]! Espero que estés genial",
-  "Hey [NOMBRE]! Te envié un DM, échale un vistazo",
-  "¡Qué onda [NOMBRE]! ¿Cómo te va?",
-  "¡Hola [NOMBRE]! Te escribí por mensaje directo",
-  "Hey [NOMBRE]! ¿Todo en orden?",
-  "¡Hola [NOMBRE]! Te mandé un mensaje al DM",
-  "¿Qué tal [NOMBRE]? ¿Cómo has estado?",
-  "Hey [NOMBRE]! Te dejé un mensaje importante en DM",
-  "¡Hola [NOMBRE]! ¿Qué tal tu semana?",
-  "¡Hey [NOMBRE]! Te escribí al mensaje directo",
-  "Hola [NOMBRE]! ¿Cómo te está yendo?",
-  "¡Qué tal [NOMBRE]! Te mandé un DM",
-  "Hey [NOMBRE]! ¿Todo marcha bien?",
-  "¡Hola [NOMBRE]! Revisa tu bandeja de mensajes"
+  "Q tal [NOMBRE]?",  
+  "¿Cómo te fue hoy [NOMBRE]? Te dejé algo, ¿lo revisaste?",  
+  "Todo bien [NOMBRE]?",  
+  "Hola [NOMBRE]! Qué tal todo? Te mandé algo, dime qué te parece!",  
+  "Hey [NOMBRE], ¿cómo andas?",  
+  "¿Qué cuenta de nuevo [NOMBRE]? Te envié algo, revísalo cuando puedas!",  
+  "Qué onda [NOMBRE]!",  
+  "Hey [NOMBRE]! Te dejé algo por ahí, dime qué opinas!",  
+  "¿Cómo va todo [NOMBRE]?",  
+  "¿Qué tal [NOMBRE]? Espero que estés bien! Te envié algo interesante!",  
+  "Hola [NOMBRE]! ¿Cómo te trata el día?",  
+  "Buen día [NOMBRE]! Te envié algo, dime si lo checaste!",  
+  "¿Todo en orden [NOMBRE]?",  
+  "¿Cómo andas [NOMBRE]? Te pasé algo, dime si lo revisaste!",  
+  "¿Cómo te va [NOMBRE]?",  
+  "¿Qué tal va la semana [NOMBRE]? Te dejé algo, échale un vistazo!",  
+  "¿Qué tal tu día [NOMBRE]?",  
+  "Hola [NOMBRE]! Te mandé algo, dime si lo viste!",  
+  "¿Todo marcha bien [NOMBRE]?",  
+  "¿Cómo va todo [NOMBRE]? Dale un vistazo a lo que te envié!",  
+  "Hola [NOMBRE]! Espero que estés teniendo un buen día!",  
+  "¿Todo marcha bien [NOMBRE]? Revisa lo que te mandé cuando tengas un momento!",  
+  "¿Qué tal tu semana [NOMBRE]?",  
+  "Hey [NOMBRE]! Todo bien? Te envié algo interesante, dime qué piensas!",  
+  "¿Cómo va la vida [NOMBRE]?",  
+  "¿Qué planes hoy [NOMBRE]? Te pasé algo interesante, dime qué te parece!",  
+  "¿Todo bien por ahí [NOMBRE]?",  
+  "¿Cómo te está yendo [NOMBRE]? Te dejé algo, dime qué opinas!",  
+  "Hola [NOMBRE], ¿cómo va eso?",  
+  "Espero que estés teniendo un buen día [NOMBRE]! Te envié algo, dime qué te parece!"
   // "Hi! [NOMBRE], how are you?",
   // "Hey [NOMBRE], hey! I left you a message on your profile!",
   // "Hi [NOMBRE]! How's your day?",
@@ -1522,6 +1530,11 @@ function clickButtonsWithDelay(texts) {
           return;
         }
       }
+
+      chrome.runtime.sendMessage({
+        action: "userMessageNotAllowed",
+        usernameMessageSent: usernameInsta
+      });
       
       resolve(false);
     }, 2000);
@@ -2359,52 +2372,7 @@ async function sendMessageComplete(request, shouldSendMessageToNewFollowers) {
 
     // here we should filter the prospect
     request.messageToSend = request.messageToSend.replaceAll("[NOMBRE]", full_name);
-    RANDOM_MESSAGES_FOR_STORIES = [
-      "Hola! [NOMBRE], cómo estás?",
-      "Hey [NOMBRE], oye! te dejé un mensaje en tu perfil!",
-      "Hola [NOMBRE]! ¿Qué tal tu día?",
-      "Hey [NOMBRE]! Te escribí al DM 😊",
-      "¡Hola [NOMBRE]! ¿Todo bien?",
-      "¡Hey [NOMBRE]! Te mandé un mensaje directo",
-      "¡Qué tal [NOMBRE]! ¿Cómo va todo?",
-      "Hola [NOMBRE]! Te dejé un mensaje importante",
-      "¡Hola [NOMBRE]! Espero que estés genial",
-      "Hey [NOMBRE]! Te envié un DM, échale un vistazo",
-      "¡Holaa [NOMBRE]! ¿Cómo te va?",
-      "¡Hola [NOMBRE]! Te escribí por mensaje directo",
-      "Hey [NOMBRE]! ¿Todo en orden?",
-      "¡Hola [NOMBRE]! Te mandé un mensaje al DM",
-      "¿Qué tal [NOMBRE]? ¿Cómo has estado?",
-      "Hey [NOMBRE]! Te dejé un mensaje importante en DM",
-      "¡Hola [NOMBRE]! ¿Qué tal tu semana?",
-      "¡Hey [NOMBRE]! Te escribí al mensaje directo",
-      "Hola [NOMBRE]! ¿Cómo te está yendo?",
-      "¡Qué tal [NOMBRE]! Te mandé un DM",
-      "Hey [NOMBRE]! ¿Todo marcha bien?",
-      "¡Hola [NOMBRE]! Revisa tu bandeja de mensajes"
-      // "Hi! [NOMBRE], how are you?",
-      // "Hey [NOMBRE], hey! I left you a message on your profile!",
-      // "Hi [NOMBRE]! How's your day going?",
-      // "Hey [NOMBRE]! I wrote you in DM 😊",
-      // "Hi [NOMBRE]! Everything good?",
-      // "Hey [NOMBRE]! I sent you a direct message",
-      // "How's it going [NOMBRE]! How's everything?",
-      // "Hi [NOMBRE]! I left you an important message",
-      // "Hi [NOMBRE]! Hope you're doing great",
-      // "Hey [NOMBRE]! I sent you a DM, check it out",
-      // "Heey [NOMBRE]! How's it going?",
-      // "Hi [NOMBRE]! I wrote you a direct message",
-      // "Hey [NOMBRE]! Everything okay?",
-      // "Hi [NOMBRE]! I sent you a message in DM",
-      // "How are you [NOMBRE]? How have you been?",
-      // "Hey [NOMBRE]! I left you an important message in DM",
-      // "Hi [NOMBRE]! How's your week going?",
-      // "Hey [NOMBRE]! I wrote you a direct message",
-      // "Hi [NOMBRE]! How are you doing?",
-      // "How's it going [NOMBRE]! I sent you a DM",
-      // "Hey [NOMBRE]! Is everything going well?",
-      // "Hi [NOMBRE]! Check your message inbox"
-    ].map(message => message.replaceAll("[NOMBRE]", full_name));
+    RANDOM_MESSAGES_FOR_STORIES = request.messagesStories.map(message => message.replaceAll("[NOMBRE]", full_name));
     
     
     messagesLimit = request.messagesLimit;

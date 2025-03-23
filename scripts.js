@@ -33,6 +33,7 @@ var sendMessagesToPreviousConversations = false;
 var tandaIntervalId = null;
 var isProspectingOwnerData = false; // controls if im sending messages to the owner followers and/or people that commented on their posts
 var shouldSendMessageToNewFollowers = false;
+var cicledInside = 0;
 let selectedTandaTimes = {
   tanda1: null,
   tanda2: null,
@@ -41,7 +42,7 @@ let selectedTandaTimes = {
 };
 
 
-const DEBUG = false;
+const DEBUG = true;
 
 
 // global vars of followers
@@ -215,10 +216,66 @@ document.getElementById("inspectWelcome").addEventListener('click', function () 
 });
 
 
+function showModalMessagesStories() {
+  let showStoriesBtn = document.getElementById('showStoriesMessagesBtn');
+  const configureButton = document.getElementById('configureStoriesMessages');
+  showStoriesBtn.style.display = 'block';
+  configureButton.style.display = 'block';
+}
+
+
+function hideModalMessagesStories() {
+  let showStoriesBtn = document.getElementById('showStoriesMessagesBtn');
+  let storiesModal = document.getElementById('storiesMessagesModal');
+  const configureButton = document.getElementById('configureStoriesMessages');
+
+  showStoriesBtn.style.display = 'none';
+  storiesModal.style.display = 'none';
+  configureButton.style.display = 'none';
+}
+
+
 document.getElementById("sendMessageStoriesCheckbox").addEventListener("change", function () {
   notSendMessageStories = !this.checked;
+  // change value of other checkbox
+  document.getElementById('sendMessageStoriesCheckboxPopup').checked = this.checked;
+  // Guardar en localStorage
+  localStorage.setItem('notSendMessageStories', notSendMessageStories);
+
+  if (this.checked) {
+    showModalMessagesStories();
+  } else {
+    hideModalMessagesStories();
+  }
 });
 
+
+document.getElementById('showStoriesMessagesBtn').addEventListener('click', () => {
+  showModalMessagesStoriesAndRender();
+});
+
+
+function showModalMessagesStoriesAndRender() {
+  let modal = document.getElementById('storiesMessagesModal');
+  modal.style.display = 'block';
+  renderStoriesMessages();
+}
+
+function showModalMessagesStoriesAndRender2() {
+  let modal = document.getElementById('modalMessagesStories');
+  modal.style.display = 'block';
+  renderStoriesMessages2();
+}
+
+// Agregar el evento para cerrar el modal
+document.querySelector('.stories-modal-close').addEventListener('click', () => {
+  document.getElementById('storiesMessagesModal').style.display = 'none';
+});
+
+
+document.getElementById('closeModalMessagesStories2').addEventListener('click', () => {
+  document.getElementById('modalMessagesStories').style.display = 'none';
+})
 
 // carousel for messages code
 
@@ -1251,13 +1308,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     slider.addEventListener('input', function() {
-        updateLabels(this.value);
+      // Guardar en localStorage
+      localStorage.setItem('savedLevelForContactingProspects', this.value);
+      // Mantener la funcionalidad existente
+      updateLabels(this.value);
     });
 
     // Inicializar con el valor por defecto
     updateLabels(slider.value);
 
   
+
 
 
   // Initialize styles on page load
@@ -1319,6 +1380,14 @@ let followerMessages = [
   "¡Gracias por el follow [NOMBRE]! 🌟 ¿De dónde me sigues?"
 ];
 
+let listMessagesStories = [
+  "Hola [NOMBRE], vi algo en tu publicación reciente que me dio una idea... ¿Te gustaría que la compartiera?",
+  "Hey [NOMBRE], tu reel reciente me hizo pensar... Tengo una idea rápida, ¿te gustaría escucharla?",
+  "¡Qué tal [NOMBRE]! oye! me pareció tu perfil muy interesante!. De hecho, me hizo pensar en algo que creo que te gustaría. ¿Hablamos?",
+  "Hola [NOMBRE], noté algo en tu historia. Me dio una perspectiva única. ¿te lo digo rápido?",
+  "¡Ey [NOMBRE]! Hubo algo en tu última publicación que resonó conmigo. Tuve una idea que creo que podría ser útil para ti... ¿qué te parece? ¿te la cuento?"
+]
+
 
 function toggleMessageButton() {
   let showMessagesBtn = document.getElementById('showFollowerMessagesBtn');
@@ -1358,6 +1427,324 @@ document.getElementById('sendMessageToNewFollowersCheckbox').addEventListener('c
   }
   toggleMessageButton();
 });
+
+
+function renderStoriesMessages2() {
+  const storiesMessagesList = document.getElementById('storiesMessagesList2');
+  storiesMessagesList.innerHTML = '';
+  
+  // Agregar estilos de scroll al contenedor
+  storiesMessagesList.style.cssText = `
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 15px;
+    /* Estilo del scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #7a60ff #f0f0f0;
+  `;
+  
+  // Obtener mensajes de stories del localStorage o usar array por defecto
+  let storiesMessages = JSON.parse(localStorage.getItem('storiesMessages')) || listMessagesStories;
+    
+  // Renderizar mensajes existentes
+  storiesMessages.forEach((message, index) => {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'stories-message-item';
+    messageDiv.style.cssText = `
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 15px;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    `;
+    
+    messageDiv.innerHTML = `
+      <div style="display: flex; flex-direction: column; width: 100%;">
+        <textarea class="stories-message-textarea" style="
+          width: 100%;
+          padding: 10px;
+          margin: 5px 0;
+          border: 1px solid #ddd;
+          border-radius: 6px;
+          min-height: 80px;
+          resize: vertical;
+          font-size: 14px;
+          line-height: 1.5;
+          background: white;">${message}</textarea>
+        <button class="insert-name-btn" style="
+          background-color: #7a60ff;
+          color: white;
+          padding: 6px 12px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 13px;
+          margin-top: 8px;
+          align-self: flex-start;
+          transition: background-color 0.2s;">
+          Introducir nombre
+        </button>
+      </div>
+      <button class="stories-delete-btn" data-index="${index}" style="
+        min-width: 32px;
+        height: 32px;
+        background: #ff4d4f;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 5px;
+        transition: background-color 0.2s;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 4h12m-1 0l-.867 10.4A2 2 0 0110.138 16H5.862a2 2 0 01-1.995-1.6L3 4h10M6 4V2a1 1 0 011-1h2a1 1 0 011 1v2H6z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    `;
+    storiesMessagesList.appendChild(messageDiv);
+
+    // Agregar hover effects
+    const deleteBtn = messageDiv.querySelector('.stories-delete-btn');
+    deleteBtn.addEventListener('mouseover', () => deleteBtn.style.backgroundColor = '#ff7875');
+    deleteBtn.addEventListener('mouseout', () => deleteBtn.style.backgroundColor = '#ff4d4f');
+
+    const insertNameBtn = messageDiv.querySelector('.insert-name-btn');
+    insertNameBtn.addEventListener('mouseover', () => insertNameBtn.style.backgroundColor = '#6346ff');
+    insertNameBtn.addEventListener('mouseout', () => insertNameBtn.style.backgroundColor = '#7a60ff');
+
+    // Agregar listener para guardar cambios en el texto
+    const textarea = messageDiv.querySelector('.stories-message-textarea');
+    textarea.addEventListener('input', () => {
+      storiesMessages[index] = textarea.value;
+      localStorage.setItem('storiesMessages', JSON.stringify(storiesMessages));
+    });
+
+    // Agregar listener para el botón de insertar nombre
+    insertNameBtn.addEventListener('click', () => {
+      const cursorPos = textarea.selectionStart;
+      const textBefore = textarea.value.substring(0, cursorPos);
+      const textAfter = textarea.value.substring(textarea.selectionEnd);
+      
+      textarea.value = textBefore + '[NOMBRE]' + textAfter;
+      storiesMessages[index] = textarea.value;
+      localStorage.setItem('storiesMessages', JSON.stringify(storiesMessages));
+      
+      const newCursorPos = cursorPos + '[NOMBRE]'.length;
+      textarea.focus();
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    });
+  });
+
+  // Agregar botón de "Agregar mensaje" si hay menos de 5 mensajes
+  if (storiesMessages.length < 100) {
+    const addButtonDiv = document.createElement('div');
+    addButtonDiv.className = 'stories-message-item add-message-btn';
+    addButtonDiv.style.textAlign = 'center';
+    addButtonDiv.innerHTML = `
+      <button class="add-message-button" style="
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        width: 100%;
+        margin-top: 10px;
+        transition: background-color 0.2s;">
+        + Agregar mensaje
+      </button>
+    `;
+    storiesMessagesList.appendChild(addButtonDiv);
+
+    const addButton = addButtonDiv.querySelector('.add-message-button');
+    addButton.addEventListener('mouseover', () => addButton.style.backgroundColor = '#45a049');
+    addButton.addEventListener('mouseout', () => addButton.style.backgroundColor = '#4CAF50');
+
+    addButton.addEventListener('click', () => {
+      storiesMessages.push('');
+      localStorage.setItem('storiesMessages', JSON.stringify(storiesMessages));
+      renderStoriesMessages();
+    });
+  }
+
+  // Agregar listener para los botones de eliminar
+  storiesMessagesList.addEventListener('click', (e) => {
+    if (e.target.closest('.stories-delete-btn')) {
+      if (storiesMessages.length <= 3) { 
+          return; // No eliminar si hay 3 o menos mensajes
+      }
+      const index = e.target.closest('.stories-delete-btn').dataset.index;
+      storiesMessages.splice(index, 1);
+      localStorage.setItem('storiesMessages', JSON.stringify(storiesMessages));
+      renderStoriesMessages2(); // Asegúrate de llamar a la función correcta
+    }
+  });
+}
+
+
+function renderStoriesMessages() {
+  const storiesMessagesList = document.getElementById('storiesMessagesList');
+  storiesMessagesList.innerHTML = '';
+  
+  // Agregar estilos de scroll al contenedor
+  storiesMessagesList.style.cssText = `
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 15px;
+    /* Estilo del scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #7a60ff #f0f0f0;
+  `;
+  
+  // Obtener mensajes de stories del localStorage o usar array por defecto
+  let storiesMessages = JSON.parse(localStorage.getItem('storiesMessages')) || listMessagesStories;
+    
+  // Renderizar mensajes existentes
+  storiesMessages.forEach((message, index) => {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'stories-message-item';
+    messageDiv.style.cssText = `
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 15px;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    `;
+    
+    messageDiv.innerHTML = `
+      <div style="display: flex; flex-direction: column; width: 100%;">
+        <textarea class="stories-message-textarea" style="
+          width: 100%;
+          padding: 10px;
+          margin: 5px 0;
+          border: 1px solid #ddd;
+          border-radius: 6px;
+          min-height: 80px;
+          resize: vertical;
+          font-size: 14px;
+          line-height: 1.5;
+          background: white;">${message}</textarea>
+        <button class="insert-name-btn" style="
+          background-color: #7a60ff;
+          color: white;
+          padding: 6px 12px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 13px;
+          margin-top: 8px;
+          align-self: flex-start;
+          transition: background-color 0.2s;">
+          Introducir nombre
+        </button>
+      </div>
+      <button class="stories-delete-btn" data-index="${index}" style="
+        min-width: 32px;
+        height: 32px;
+        background: #ff4d4f;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 5px;
+        transition: background-color 0.2s;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 4h12m-1 0l-.867 10.4A2 2 0 0110.138 16H5.862a2 2 0 01-1.995-1.6L3 4h10M6 4V2a1 1 0 011-1h2a1 1 0 011 1v2H6z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    `;
+    storiesMessagesList.appendChild(messageDiv);
+
+    // Agregar hover effects
+    const deleteBtn = messageDiv.querySelector('.stories-delete-btn');
+    deleteBtn.addEventListener('mouseover', () => deleteBtn.style.backgroundColor = '#ff7875');
+    deleteBtn.addEventListener('mouseout', () => deleteBtn.style.backgroundColor = '#ff4d4f');
+
+    const insertNameBtn = messageDiv.querySelector('.insert-name-btn');
+    insertNameBtn.addEventListener('mouseover', () => insertNameBtn.style.backgroundColor = '#6346ff');
+    insertNameBtn.addEventListener('mouseout', () => insertNameBtn.style.backgroundColor = '#7a60ff');
+
+    // Agregar listener para guardar cambios en el texto
+    const textarea = messageDiv.querySelector('.stories-message-textarea');
+    textarea.addEventListener('input', () => {
+      storiesMessages[index] = textarea.value;
+      localStorage.setItem('storiesMessages', JSON.stringify(storiesMessages));
+    });
+
+    // Agregar listener para el botón de insertar nombre
+    insertNameBtn.addEventListener('click', () => {
+      const cursorPos = textarea.selectionStart;
+      const textBefore = textarea.value.substring(0, cursorPos);
+      const textAfter = textarea.value.substring(textarea.selectionEnd);
+      
+      textarea.value = textBefore + '[NOMBRE]' + textAfter;
+      storiesMessages[index] = textarea.value;
+      localStorage.setItem('storiesMessages', JSON.stringify(storiesMessages));
+      
+      const newCursorPos = cursorPos + '[NOMBRE]'.length;
+      textarea.focus();
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    });
+  });
+
+  // Agregar botón de "Agregar mensaje" si hay menos de 5 mensajes
+  if (storiesMessages.length < 100) {
+    const addButtonDiv = document.createElement('div');
+    addButtonDiv.className = 'stories-message-item add-message-btn';
+    addButtonDiv.style.textAlign = 'center';
+    addButtonDiv.innerHTML = `
+      <button class="add-message-button" style="
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        width: 100%;
+        margin-top: 10px;
+        transition: background-color 0.2s;">
+        + Agregar mensaje
+      </button>
+    `;
+    storiesMessagesList.appendChild(addButtonDiv);
+
+    const addButton = addButtonDiv.querySelector('.add-message-button');
+    addButton.addEventListener('mouseover', () => addButton.style.backgroundColor = '#45a049');
+    addButton.addEventListener('mouseout', () => addButton.style.backgroundColor = '#4CAF50');
+
+    addButton.addEventListener('click', () => {
+      storiesMessages.push('');
+      localStorage.setItem('storiesMessages', JSON.stringify(storiesMessages));
+      renderStoriesMessages();
+    });
+  }
+
+  // Agregar listener para los botones de eliminar
+  storiesMessagesList.addEventListener('click', (e) => {
+    if (e.target.closest('.stories-delete-btn')) {
+      if (storiesMessages.length <= 3) { 
+        return; // No eliminar si hay 3 o menos mensajes
+      }
+      const index = e.target.closest('.stories-delete-btn').dataset.index;
+      storiesMessages.splice(index, 1);
+      localStorage.setItem('storiesMessages', JSON.stringify(storiesMessages));
+      renderStoriesMessages();
+    }
+  });
+}
+
+
 
 document.addEventListener('DOMContentLoaded', function() {
   // Debug inicial
@@ -1411,12 +1798,89 @@ document.addEventListener('DOMContentLoaded', function() {
   }
    // obtener si la persona queria configurar el envío de mensajes previos!
    const shouldSendMessageToNewFollowersLocalStorage = localStorage.getItem('shouldSendMessageToNewFollowers');
+   const savedLevel = localStorage.getItem('savedLevelForContactingProspects') || '1';
    if (shouldSendMessageToNewFollowersLocalStorage) {
     shouldSendMessageToNewFollowers = shouldSendMessageToNewFollowersLocalStorage === 'true';
     // activate checkbox
     document.getElementById('sendMessageToNewFollowersCheckbox').checked = shouldSendMessageToNewFollowers;
     toggleMessageButton();
    }
+
+    
+  // Obtener elementos del DOM
+  const sliderLevel = document.getElementById('prospectLevelSlider');
+  const levelLabels = document.querySelectorAll('.level-label');
+  const levelDescs = document.querySelectorAll('.level-desc');
+  
+  // Establecer el valor del slider
+  sliderLevel.value = savedLevel;
+  
+  // Actualizar las clases active
+  levelLabels.forEach((label, index) => {
+      label.classList.remove('active');
+      if (index === parseInt(savedLevel) - 1) {
+          label.classList.add('active');
+      }
+  });
+  
+  levelDescs.forEach((desc, index) => {
+      desc.classList.remove('active');
+      if (index === parseInt(savedLevel) - 1) {
+          desc.classList.add('active');
+      }
+  });
+
+   // insert here other elements from local storage!
+
+    // Obtener el checkbox
+    const checkbox2 = document.getElementById('sendMessageStoriesCheckbox'); // Asegúrate de tener un selector más específico
+    const storiesCheckbox = document.getElementById('sendMessageStoriesCheckboxPopup');
+    const configureButton = document.getElementById('configureStoriesMessages');
+    
+    // Recuperar el valor guardado (si no existe, por defecto será true)
+    const savedValue = localStorage.getItem('notSendMessageStories');
+    notSendMessageStories = savedValue === null ? true : savedValue === 'true';
+
+    if (!notSendMessageStories) {
+      showModalMessagesStories();
+
+    } else {
+      hideModalMessagesStories();
+    }
+
+    renderStoriesMessages();
+    
+    // Establecer el estado del checkbox (nota la inversión porque notSendMessageStories es lo opuesto al checked)
+    checkbox2.checked = !notSendMessageStories;
+    storiesCheckbox.checked = !notSendMessageStories;
+
+
+
+
+    storiesCheckbox.addEventListener('change', function() {
+      // Sincronizar el otro checkbox
+      const checkboxTwo = document.getElementById('sendMessageStoriesCheckbox');
+      checkboxTwo.checked = this.checked;
+      checkboxTwo.dispatchEvent(new Event('change'));
+  
+    });
+
+    // Efecto hover para el botón
+    configureButton.addEventListener('mouseover', function() {
+        this.style.backgroundColor = '#6346ff';
+    });
+
+    configureButton.addEventListener('mouseout', function() {
+        this.style.backgroundColor = '#7a60ff';
+    });
+
+    configureButton.addEventListener('click', function () {
+      showModalMessagesStoriesAndRender2();
+    });
+   
+
+
+
 
 
 
@@ -1504,6 +1968,10 @@ function renderMessages() {
       });
   }
 }
+
+
+
+
 
 messagesList.addEventListener('click', (e) => {
   if (e.target.closest('.follower-delete-btn')) {
@@ -4244,6 +4712,13 @@ document
   });
 
 
+document
+  .getElementById("buttonPopupInfoStories")
+  .addEventListener("click", function () {
+    document.getElementById("infoPopupStories").style.display = "block";
+  });
+
+
 document.getElementById("buttonPopupInfo2").addEventListener("click", function () {
   document.getElementById("infoPopup2").style.display = "block";
 })
@@ -4347,6 +4822,12 @@ document
   .getElementById("buttonPopupInfoClose")
   .addEventListener("click", function () {
     document.getElementById("infoPopup").style.display = "none";
+  });
+
+  document
+  .getElementById("buttonPopupInfoCloseStories")
+  .addEventListener("click", function () {
+    document.getElementById("infoPopupStories").style.display = "none";
   });
 
 document
@@ -5681,6 +6162,9 @@ async function sendInstagramDMMessages() {
 
     const tableBodyValidation = document.getElementById("sentMessagesTableBody");
     const rows = tableBodyValidation.getElementsByTagName("tr");
+    // console.error(rows);
+    // console.error("MESSAGE LIMIT " + messageLimit.toString());
+    // console.error("NUM TANDAS LIMIT " + document.getElementById('numTandas').value);
 
     if (stopMessages === true) {
       if (DEBUG) console.error(`[HOWER] - Mensajes Detenidos!! [WINDOW:${windowMessagesId}}]`);
@@ -5704,10 +6188,15 @@ async function sendInstagramDMMessages() {
     } else if (rows.length >= Math.floor(messageLimit / parseInt(document.getElementById('numTandas').value))) {
       
       let resOfDivision = messageLimit % parseInt(document.getElementById('numTandas').value);
-      if (currentTanda === 1 && (rows.length < (Math.floor(messageLimit / parseInt(document.getElementById('numTandas').value)) + resOfDivision))) {
-        debugConsoleLog("Tanda 1 aun le falta por completar... es el residuo... continuando...")
-        continue;
+      if (cicledInside < 5) {
+        if (currentTanda === 1 && (rows.length < (Math.floor(messageLimit / parseInt(document.getElementById('numTandas').value)) + resOfDivision))) {
+          debugConsoleLog("Tanda 1 aun le falta por completar... es el residuo... continuando...")
+          cicledInside ++;
+          continue;
+        }
       }
+
+      cicledInside = 0;
       
       if (DEBUG) console.error(`[HOWER] - Tanda ${currentTanda} completada. Mensajes enviados: ${rows.length}`);
 
@@ -5732,6 +6221,7 @@ async function sendInstagramDMMessages() {
       // Obtener el tiempo de inicio de la siguiente tanda
       let nextTandaTime = selectedTandaTimes[`tanda${currentTanda}`];
       const currentTime = new Date();
+      // const targetTime = new Date(currentTime.getTime() + (5 * 60 * 1000)); // Set to 5 minutes after current time
       const targetTime = new Date();
       const [hours, minutes] = nextTandaTime.split(':').map(Number);
       targetTime.setHours(hours, minutes, 0, 0);
@@ -5902,27 +6392,6 @@ async function sendInstagramDMMessages() {
             }
             counterTandaTemp++;
           }
-
-          // while (counterTandaTemp <= 3) { // set all tandas even if are not the selected ones!
-          //   const nextTandaSelect = document.querySelector(`#tanda${counterTandaTemp} .horario-select`);
-
-          //   if (nextTandaSelect && (counterTandaTemp != currentTanda)) {
-          //     const hoursToAdd = 3 * (counterTandaTemp - currentTanda);
-          //     let newHour = currentHour + hoursToAdd;
-
-          //     // Ajustar si pasa a otro día
-          //     if (newHour >= 24) {
-          //       newHour = newHour - 24;
-          //     }
-
-          //     const newTime = `${String(newHour).padStart(2, '0')}:${String(currentMinutes).padStart(2, '0')}`;
-          //     nextTandaSelect.value = newTime;
-          //     selectedTandaTimes[`tanda${counterTandaTemp}`] = newTime;
-          //     debugConsoleLog("Nuevo tiempo para tanda " + counterTandaTemp + " TIEMPO: " + newTime);
-          //   }
-          //   counterTandaTemp++;
-          // }
-
           // actualizar las tandas anteriores
           debugConsoleLog("Current tanda times " + JSON.stringify(selectedTandaTimes));
         }
@@ -5995,75 +6464,78 @@ async function sendInstagramDMMessages() {
       return;
     }
 
+    cicledInside = 0;
+
 
     document.getElementById(
       "statusSpanSenders"
     ).textContent = `Status: Sincronizado y Enviando mensajes. no cierres la ventana de Instagram!`;
 
-    // we do it with a for loop to later on resume the message sending!
+    
+    try {
+      if (indexMessagesSent >= linesToUse.length) {
+        // we have finished the list
+        if (DEBUG) console.error(`[HOWER] - indexMessagesSent >= linesToUse.length = TRUE... [WINDOW]`);
+        if (DEBUG) console.error(`[HOWER] - Saliendo del bucle y finalizando (indexMessagesSent >= linesToUse.length) [WINDOW]`);
+        break;
+      }
 
-    if (indexMessagesSent >= linesToUse.length) {
-      // we have finished the list
-      if (DEBUG) console.error(`[HOWER] - indexMessagesSent >= linesToUse.length = TRUE... [WINDOW]`);
-      if (DEBUG) console.error(`[HOWER] - Saliendo del bucle y finalizando (indexMessagesSent >= linesToUse.length) [WINDOW]`);
-      break;
+      if (shouldSendMessageToNewFollowers && indexMessagesSent === 0) {
+        // validate for the inspecting followers 
+        document.getElementById('loadingFollowersOverlay').style.display = 'block';
+        document.getElementById('loadingFollowersPopup').style.display = 'flex';
+       try {      
+         // open the chrome window inside the user profile
+         await chrome.tabs.update(instaTab.id, {
+           url: `https://www.instagram.com/`,
+         });
+ 
+         await new Promise(resolve => {
+           chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+             if (tabId === instaTab.id && info.status === 'complete') {
+               chrome.tabs.onUpdated.removeListener(listener);
+               resolve();
+             }
+           });
+         });
+ 
+         // this will get me the list of new followers
+        const responseListFollowers = chrome.tabs.sendMessage(instaTab.id, {
+          action: "listNewFollowers",
+          instaTabId: instaTab.id,
+          windowId: windowMessagesId,
+        });
+  
+        } catch (error) {
+          if (DEBUG) console.error(`[HOWER:ERROR] - Error al obtener lista de nuevos seguidores -> ${error.toString()} - [WINDOW:${windowMessagesId}]`);
+        }
+        
+        let timeLimitForNewFollowers = 60;
+        let counter = 0;
+        while (counter < timeLimitForNewFollowers) {
+          // await 1 second per each loop and check
+          await delay(1000);
+          counter++;
+          if (listNewFollowers.length > 0) {
+            break;
+          }
+        }
+    
+        // deactivate popup
+        document.getElementById('loadingFollowersOverlay').style.display = 'none';
+        document.getElementById('loadingFollowersPopup').style.display = 'none';
+ 
+        // add the listNewFollowwers to the messagesToSendNewFollowers
+        // remove repeated strings inside the list
+        listNewFollowers = [...new Set(listNewFollowers)];
+        linesToUse = [...listNewFollowers, ...linesToUse];
+      }
+    } catch (e) {
+      debugConsoleLog("No se pudo enviar o validar el mandar mensajes a nuevos seguidores! " + e.toString());
     }
-
-    // HERE ADD THE LOGIC OF THE NEW FOLLOWERS
     
-    
-    if (shouldSendMessageToNewFollowers && indexMessagesSent === 0) {
-       // validate for the inspecting followers 
-       document.getElementById('loadingFollowersOverlay').style.display = 'block';
-       document.getElementById('loadingFollowersPopup').style.display = 'flex';
-      try {      
-        // open the chrome window inside the user profile
-        await chrome.tabs.update(instaTab.id, {
-          url: `https://www.instagram.com/`,
-        });
-
-        await new Promise(resolve => {
-          chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
-            if (tabId === instaTab.id && info.status === 'complete') {
-              chrome.tabs.onUpdated.removeListener(listener);
-              resolve();
-            }
-          });
-        });
-
-        // this will get me the list of new followers
-       const responseListFollowers = chrome.tabs.sendMessage(instaTab.id, {
-         action: "listNewFollowers",
-         instaTabId: instaTab.id,
-         windowId: windowMessagesId,
-       });
- 
-       } catch (error) {
-         if (DEBUG) console.error(`[HOWER:ERROR] - Error al obtener lista de nuevos seguidores -> ${error.toString()} - [WINDOW:${windowMessagesId}]`);
-       }
-       
-       let timeLimitForNewFollowers = 60;
-       let counter = 0;
-       while (counter < timeLimitForNewFollowers) {
-         // await 1 second per each loop and check
-         await delay(1000);
-         counter++;
-         if (listNewFollowers.length > 0) {
-           break;
-         }
-       }
-   
-       // deactivate popup
-       document.getElementById('loadingFollowersOverlay').style.display = 'none';
-       document.getElementById('loadingFollowersPopup').style.display = 'none';
-
-       // add the listNewFollowwers to the messagesToSendNewFollowers
-       // remove repeated strings inside the list
-       listNewFollowers = [...new Set(listNewFollowers)];
-       linesToUse = [...listNewFollowers, ...linesToUse];
-     }
- 
      
+
 
     // get the user
     let user = linesToUse[indexMessagesSent];
@@ -6074,7 +6546,7 @@ async function sendInstagramDMMessages() {
       if (DEBUG) console.error(`[HOWER] - Username Obtenido -> ${username} [WINDOW:${windowMessagesId}]`);
     } catch (e) {
       username = "";
-      if (DEBUG) console.error(`[HOWER:ERROR] - Username NO SE PUDO OBTENER -> ${username} [WINDOW:${windowMessagesId}]`);
+      console.error(`[HOWER:ERROR] - Username NO SE PUDO OBTENER -> ${username} [WINDOW:${windowMessagesId}] + ERROR: ${e.toString()}}`);
     }
 
     indexMessagesSent += 1;
@@ -6084,7 +6556,7 @@ async function sendInstagramDMMessages() {
       if (!username) {
         if (DEBUG) console.error(`[HOWER] - NO HAY NOMBRE DE USUARIO VALIDO - Esperando (1 minuto) - [WINDOW:${windowMessagesId}]`);
         if (isInspectingAndSending || isSending) {
-          await delay(60 * 1000); // await 1 minute
+          // await delay(1000); // await 1 second, and continue to next user!
           continue;
         }
         // means no user is left!
@@ -6096,13 +6568,20 @@ async function sendInstagramDMMessages() {
 
       // check si es buen usuario
       let personalization = "";
-      if (usersMessageSentSet.size > 0 && (usersMessageSentSet.has(username) || usersMessageSentSet.has(username + "_NOTSENT") || usersMessageSentSet.has(username.split("-FOLLOWER")[0]) || usersMessageSentSet.has(username + "-FOLLOWER") || usersMessageSentSet.has(username.split("-FOLLOWER")[0] + "_NOTSENT") || usersMessageSentSet.has(username + "-FOLLOWER_NOTSENT"))) { // and check if for username + "_NOTSENT"
-        if (DEBUG) console.error(`[HOWER] - Ya vimos al usuario -> ${username} CONTINUANDO - [WINDOW:${windowMessagesId}]`);
-
-        // already seen user
-        // this is in case the Follow option is activated, and deactivated, such that we can avoid repetition
-        // also consider that, the set lives forever in the program
-        continue;
+      try {
+        if (usersMessageSentSet.size > 0 && (usersMessageSentSet.has(username) || usersMessageSentSet.has(username + "_NOTSENT") || usersMessageSentSet.has(username.split("-FOLLOWER")[0]) || usersMessageSentSet.has(username + "-FOLLOWER") || usersMessageSentSet.has(username.split("-FOLLOWER")[0] + "_NOTSENT") || usersMessageSentSet.has(username + "-FOLLOWER_NOTSENT"))) { // and check if for username + "_NOTSENT"
+          if (DEBUG) console.error(`[HOWER] - Ya vimos al usuario -> ${username} CONTINUANDO - [WINDOW:${windowMessagesId}]`);
+          // already seen user
+          // this is in case the Follow option is activated, and deactivated, such that we can avoid repetition
+          // also consider that, the set lives forever in the program
+          continue;
+        }
+      } catch (e) {
+        console.error("[HOWER:ERROR] - No se pudo validar si existe en el set!");
+        sendMessagesToPreviousConversations = true;
+        // de esta manera si no se puede validar, para evitar problemas, nos aseguramos que
+        // el usuario no le mande mesnaje a personas que checa el content.js
+        // sobre conversaciones previas!
       }
 
       if (linesToUse.length > 6) {
@@ -6161,7 +6640,7 @@ async function sendInstagramDMMessages() {
 
 
     } catch (e) {
-      if (DEBUG) console.error("ERROR FUERA DE CONTEXTO " + e.toString());
+      console.error("ERROR FUERA DE CONTEXTO " + e.toString());
     }
 
     if (DEBUG) console.error(`[HOWER] - Actualizando ventana con USERNAME!-> ${username} - [WINDOW:${windowMessagesId}]`);
@@ -6288,6 +6767,7 @@ async function sendInstagramDMMessages() {
         selectedProspectFilterLevel: selectedProspectFilterLevel,
         shouldSendMessageToNewFollowers: false,
         messagesToSendNewFollowers: followersMessageSent,
+        messagesStories: JSON.parse(localStorage.getItem('storiesMessages')) || listMessagesStories,
         username,
         messagesLimit: messageLimit,
         followerMessages: followerMessages
@@ -9110,7 +9590,6 @@ async function instagramIsLoggedIn() {
     });
 
     const data = await response.json();
-
     // Check if we got valid data back
     if (data && data.data && data.data.xdt_api__v1__fbsearch__topsearch_connection) {
       return true;
