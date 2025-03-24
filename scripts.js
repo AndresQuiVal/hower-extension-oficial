@@ -7011,7 +7011,7 @@ async function sendInstagramDMMessages() {
   try {
     await createCSVMessagesSent();
   } catch (e) {
-    debugConsoleLog("Hubo un error al generar un .csv al terminar la tanda verde! + " e.toString());
+    debugConsoleLog("Hubo un error al generar un .csv al terminar la tanda verde! + " + e.toString());
   }
 
   indexMessagesSent = 0;
