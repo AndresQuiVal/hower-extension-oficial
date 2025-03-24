@@ -7008,6 +7008,12 @@ async function sendInstagramDMMessages() {
   }
 
   // finally, create the .csv from the background.js file
+  try {
+    await createCSVMessagesSent();
+  } catch (e) {
+    debugConsoleLog("Hubo un error al generar un .csv al terminar la tanda verde! + " e.toString());
+  }
+
   indexMessagesSent = 0;
   followersLstIsSendingLimit = 10000;
   newHeaders = undefined;
@@ -7439,6 +7445,58 @@ function validateDsUserId(cookieString, expectedUserId) {
   const actualUserId = match[1];
   return actualUserId === expectedUserId;
 }
+
+
+document.getElementById('sendBtnAI').addEventListener('click', async () => {
+  const input = document.getElementById('userInputAI').value;
+  const responseBox = document.getElementById('responseBoxAI');
+  responseBox.textContent = "Thinking...";
+
+  const apiKey = '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'; // <-- NO usar en producción así
+
+  const messages = [
+    {
+      role: "system",
+      content: "You are a friendly GPT assistant that helps with productivity tips and answers simple questions in a short, clear way."
+    },
+    {
+      role: "user",
+      content: input
+    }
+  ];
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: messages
+      })
+    });
+
+    const data = await res.json();
+    const reply = data.choices[0].message.content;
+
+    // 🪄 Animación letra por letra
+    responseBox.textContent = ""; // Vaciar antes de escribir
+    let i = 0;
+    const typeInterval = setInterval(() => {
+      if (i < reply.length) {
+        responseBox.textContent += reply.charAt(i);
+        i++;
+      } else {
+        clearInterval(typeInterval); // Parar cuando termine
+      }
+    }, 20); // Velocidad: menor = más rápido (ajusta si quieres)
+
+  } catch (error) {
+    responseBox.textContent = "Error: " + error.message;
+  }
+});
 
 
 document.getElementById('ai-question').addEventListener('click', () => {
