@@ -1,0 +1,47 @@
+[33mcommit 7a4f3f599d144e78c70783dacb98d0f9c190bb28[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: Andrés Quiroz Valdovinos <andresquirozvaldovinos@Andress-MacBook-Pro.local>
+Date:   Sun Mar 2 23:43:54 2025 -0600
+
+    Bugs solved for send messages to new followersgit add .
+
+[33mcommit cec5e061c4ae00014e98ad3e4f4272be6fa497a1[m
+Author: Andrés Quiroz Valdovinos <andresquirozvaldovinos@Andress-MacBook-Pro.local>
+Date:   Sun Mar 2 11:32:32 2025 -0600
+
+    Added just a ;
+
+[33mcommit 154d9781a0dc51ade7149c08287581aa97c3eea2[m
+Author: AndresQuiVal <quirozval.andres@hotmail.com>
+Date:   Thu Feb 27 14:04:58 2025 -0600
+
+    Added new people
+
+[33mcommit 9e6e4eb11896e4ed6d0456003b0c02a0baaa32e4[m
+Author: AndresQuiVal <quirozval.andres@hotmail.com>
+Date:   Tue Feb 25 18:31:26 2025 -0600
+
+    Added the nucleus of the 'Saludar a nuevos seguidores' (yet, is still disabled)
+
+[33mcommit 93f853c0fe145bc33af998b582e2b78606bef38b[m
+Author: AndresQuiVal <quirozval.andres@hotmail.com>
+Date:   Tue Feb 25 00:05:17 2025 -0600
+
+    Added implementation for new Followers
+
+[33mcommit caf74e012fc0843b605ac8bea134d8f03086a031[m
+Author: Andrés Quiroz Valdovinos <andresquirozvaldovinos@Andress-MacBook-Pro.local>
+Date:   Mon Feb 24 22:47:01 2025 -0600
+
+    Added major changes for new updates 1.2
+
+[33mcommit 1a7a3f2a7798f5968620a644f3ba11787cc5dcf3[m
+Author: AndresQuiVal <quirozval.andres@hotmail.com>
+Date:   Sun Feb 23 16:43:01 2025 -0600
+
+    Added new
+
+[33mcommit b6e8ef6d2da2175e847916868d2bbda98513faf2[m
+Author: AndresQuiVal <quirozval.andres@hotmail.com>
+Date:   Sun Feb 23 16:42:21 2025 -0600
+
+    first commit

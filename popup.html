@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hower - Lead Inspector</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css"
+        integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #020106;
+            overflow: hidden;
+        }
+
+        h1, h2, h3 {
+            color: #5f0099;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        label {
+            color: #5f0099;
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-form {
+            width: 300px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #7a60ff;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            box-shadow: none;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #5f0099;
+        }
+
+        a {
+            color: #7a60ff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #5f0099;
+        }
+
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 600px;
+            background-color: #fff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .popup img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .popup-content {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .popup button {
+            padding: 10px 20px;
+            background-color: #8e1efc;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .popup button:hover {
+            background-color: #5f0099;
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        /* Loading spinner styles */
+        .loading-icon {
+            font-size: 50px;
+            color: #957fff;
+            animation: spin 1.5s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="welcomePopupBadFileMethod" class="popup" style="display: block; background-color: #1e1e2f; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); align-items: center; justify-content: center;">
+        <div class="popup-content" style="color: white; text-align: center; padding: 20px;">
+            <h2 style="color: #957fff; font-family: 'Poppins', sans-serif;">Buscando un buen prospecto a contactar 🫠</h2>
+            
+            <!-- Loading icon -->
+            <div class="loading-icon">
+                <i class="fas fa-spinner"></i>
+            </div>
+            
+            <p style="font-size: 14px; font-family: 'Poppins', sans-serif;">
+                <b>Estamos buscando un buen cliente potencial para contactarlo</b>
+            </p>
+            <p>Este proceso puede demorar unos minutos</b></p>
+
+           
+        </div>
+    </div>
+</body>
+
+</html>
